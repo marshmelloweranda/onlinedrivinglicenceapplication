@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import axios from "axios";
+import { useSearchParams } from "react-router-dom"; // Assuming you are using react-router-dom
 
 // --- Helper Components ---
 
@@ -35,7 +37,7 @@ export default function App() {
       address: "No. 123, Galle Road, Colombo 03",
       phone: "0771234567",
       email: "kasun.silva@email.com",
-      photoUrl: `https://placehold.co/200x250/EBF4FF/7684A3?text=Applicant+Photo`
+      photoUrl: `./person1.jpeg`
     };
     setUserData(mockUserData);
     setFormData(mockUserData);
@@ -110,6 +112,37 @@ const LoginPage = ({ onLogin }) => {
         e.preventDefault();
         if (nic) onLogin(nic);
     }
+    useEffect(() => {
+        const renderButton = () => {
+            window.SignInWithEsignetButton?.init(
+                {
+                    oldConfig: {
+                        acr_values: 'mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:static-code',
+                    authorizeUri: 'https://esignet.dev.mosip.net/authorize',
+                    claims_locales: 'en',
+                    client_id: '88Vjt34c5Twz1oJ',
+                    display: 'page',
+                    max_age: 21,
+                    nonce: 'ere973eieljznge2311',
+                    prompt: 'consent',
+                    redirect_uri: 'https://healthservices.dev.mosip.net/userprofile',
+                    scope: 'openid profile',
+                    state: 'eree2311',
+                    ui_locales: 'en'
+                    },
+                    buttonConfig: {
+                        labelText: 'Sign in with e-Signet',
+                        shape: 'soft_edges',
+                        theme: 'filled_orange',
+                        type: 'standard'
+                                            },
+                    signInElement: document.getElementById('sign-in-with-esignet'),
+                }
+            )
+        }
+        renderButton();
+    })
+
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 md:p-12 max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Applicant Login</h2>
@@ -121,6 +154,9 @@ const LoginPage = ({ onLogin }) => {
                     <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Login & Fetch Details
                     </button>
+                </div>
+                <div>
+                    <div id="sign-in-with-esignet" style={{width: '100%'}}></div>
                 </div>
             </form>
         </div>
@@ -369,3 +405,124 @@ const CheckboxCard = ({ id, label, description, data, onChange }) => (
         <div className="mt-2 text-sm text-gray-600">{description}</div>
     </label>
 );
+
+
+
+const UserProfile = () => {
+    // Correctly defined status object
+    const status = {
+        LOADING: "LOADING",
+        LOADED: "LOADED",
+        ERROR: "ERROR",
+        AUTHENTICATING: "AUTHENTICATING"
+    };
+
+    // --- CORRECTION 1: Added a state variable to hold the current status ---
+    // The component was missing a state to track its current status (e.g., loading, loaded, error).
+    const [currentStatus, setStatus] = useState(status.LOADING);
+
+    const [searchParams, setSearchParams] = useSearchParams(); // Renamed for clarity to follow convention
+    const [error, setError] = useState(null);
+    const [userInfo, setUserInfo] = useState(null);
+
+    // Handle login API integration
+    const getUserDetails = async (authcode) => {
+        // --- CORRECTION 2: Set status to AUTHENTICATING before API call ---
+        // This gives better feedback to the user.
+        setStatus(status.AUTHENTICATING);
+        setError(null);
+        setUserInfo(null);
+
+        try {
+            const endpoint = `http://localhost:8888/delegate/fetchUserInfo?code=${authcode}`;
+            const response = await axios.get(endpoint, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            // --- CORRECTION 3: Changed 'var' to 'const' ---
+            // It's modern practice to use 'const' or 'let' instead of 'var'.
+            const userInfoData = response.data;
+
+            setUserInfo(userInfoData);
+            setStatus(status.LOADED);
+
+        } catch (errormsg) {
+            setError({ errorCode: errormsg.code || "API_FETCH_FAILED", errorMsg: errormsg.message });
+            setStatus(status.ERROR);
+        }
+    };
+
+    useEffect(() => {
+        const getQueryParams = () => { // Removed async as it's not needed here
+            // --- CORRECTION 4: Used the state variable 'searchParams' to get values ---
+            // The original code incorrectly used the setter function 'setSearchparams'.
+            let authCode = searchParams.get("code");
+            let errorCode = searchParams.get("error");
+            let error_desc = searchParams.get("error_description");
+
+            if (errorCode) {
+                // --- CORRECTION 5: Handle the error from query params properly ---
+                // The original code would just return, leaving a blank screen.
+                setError({
+                    errorCode: errorCode,
+                    errorMsg: error_desc || "An error occurred during authentication.",
+                });
+                setStatus(status.ERROR);
+                return;
+            }
+
+            if (authCode) {
+                getUserDetails(authCode);
+            } else {
+                setError({
+                    errorCode: "AUTH_CODE_MISSING",
+                    errorMsg: "Authentication code is missing from the URL.",
+                });
+                // --- CORRECTION 6: Used the correct status object ---
+                // The original code had a typo: 'StyleSheetList.ERROR'.
+                setStatus(status.ERROR);
+            }
+        };
+
+        getQueryParams();
+    }, []); // The empty dependency array is correct for running this once on mount
+
+    return (
+        <div>
+            {/* The header can show the name once loaded */}
+            <div className='header'>Welcome {userInfo?.name}</div>
+
+            {/* --- CORRECTION 7: Used the 'currentStatus' state for conditional rendering --- */}
+            {/* The original code incorrectly compared the status object to itself (e.g., status === status.LOADING) */}
+            
+            {currentStatus === status.LOADING && <div>Loading Please Wait...</div>}
+            {currentStatus === status.AUTHENTICATING && <div>Authenticating and fetching user details...</div>}
+
+            {currentStatus === status.LOADED && userInfo && (
+                <div>
+                    <div className="card">
+                        <img src={userInfo?.picture} alt="User profile" style={{ width: "100%" }} />
+                        <div className='color-black mt-5 mb-10'>{userInfo?.email}</div>
+                        <div className="color-black mb-10">
+                            Date of Birth: <span className="title color-black">{userInfo?.birthdate}</span>
+                        </div>
+                        <div>
+                            Phone: <span>{userInfo?.phone_number}</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {currentStatus === status.ERROR && (
+                <div>
+                    <h3>Oops! An error occurred.</h3>
+                    <p>Please try again after some time.</p>
+                    {/* Optionally display the error message for debugging */}
+                    {error && <pre style={{ color: 'red' }}><code>Error Code: {error.errorCode}<br />{error.errorMsg}</code></pre>}
+                </div>
+            )}
+        </div>
+    );
+};
