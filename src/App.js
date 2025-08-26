@@ -64,6 +64,10 @@ export default function App() {
       setCurrentPage('login');
   }
 
+  const handleLoginWithSLUDI = () => {
+    setCurrentPage('userprofile');
+  }
+
   const renderPage = () => {
     switch (currentPage) {
       case 'login':
@@ -76,6 +80,8 @@ export default function App() {
         return <PaymentPage onPaymentSuccess={handlePaymentSuccess} />;
       case 'confirmation':
         return <ConfirmationPage onResubmit={handleResubmit} />;
+      case 'userprofile':
+        return <UserProfile onSubmitToSLUDI={handleLoginWithSLUDI} />;
       default:
         return <LoginPage onLogin={handleLogin} />;
     }
@@ -118,20 +124,20 @@ const LoginPage = ({ onLogin }) => {
                 {
                     oldConfig: {
                         acr_values: 'mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:static-code',
-                    authorizeUri: 'https://esignet.dev.mosip.net/authorize',
-                    claims_locales: 'en',
-                    client_id: '88Vjt34c5Twz1oJ',
-                    display: 'page',
-                    max_age: 21,
-                    nonce: 'ere973eieljznge2311',
-                    prompt: 'consent',
-                    redirect_uri: 'https://healthservices.dev.mosip.net/userprofile',
-                    scope: 'openid profile',
-                    state: 'eree2311',
-                    ui_locales: 'en'
+                        authorizeUri: 'https://esignet.dev.mosip.net/authorize',
+                        claims_locales: 'en',
+                        client_id: '88Vjt34c5Twz1oJ',
+                        display: 'page',
+                        max_age: 21,
+                        nonce: 'ere973eieljznge2311',
+                        prompt: 'consent',
+                        redirect_uri: 'https://dev.digitaldrivinglicence.net/userprofile',
+                        scope: 'openid profile',
+                        state: 'eree2311',
+                        ui_locales: 'en'
                     },
                     buttonConfig: {
-                        labelText: 'Sign in with e-Signet',
+                        labelText: 'Sign in with SLUDI',
                         shape: 'soft_edges',
                         theme: 'filled_orange',
                         type: 'standard'
@@ -408,7 +414,7 @@ const CheckboxCard = ({ id, label, description, data, onChange }) => (
 
 
 
-const UserProfile = () => {
+const UserProfile = ({onSubmitToSLUDI}) => {
     // Correctly defined status object
     const status = {
         LOADING: "LOADING",
