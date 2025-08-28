@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import { useSearchParams } from "react-router-dom"; // Assuming you are using react-router-dom
+import { useExternalScript } from './useExternalScript';
 
 // --- Helper Components ---
 
@@ -118,20 +119,24 @@ const LoginPage = ({ onLogin }) => {
         e.preventDefault();
         if (nic) onLogin(nic);
     }
+
+    const signInButtonScript = "https://sludiauth.icta.gov.lk/plugins/sign-in-button-plugin.js";
+    const state = useExternalScript(signInButtonScript);
+
     useEffect(() => {
         const renderButton = () => {
             window.SignInWithEsignetButton?.init(
                 {
                     oidcConfig: {
                         acr_values: 'mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:static-code',
-                        authorizeUri: 'https://esignet.dev.mosip.net/authorize',
+                        authorizeUri: 'https://sludiauth.icta.gov.lk/authorize',
                         claims_locales: 'en',
-                        client_id: '88Vjt34c5Twz1oJ',
+                        client_id: 'IIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArpXLs',
                         display: 'page',
                         max_age: 21,
                         nonce: 'ere973eieljznge2311',
                         prompt: 'consent',
-                        redirect_uri: 'https://dev.digitaldrivinglicence.net/userprofile',
+                        redirect_uri: 'http://localhost:5000/userprofile',
                         scope: 'openid profile',
                         state: 'eree2311',
                         ui_locales: 'en'
@@ -184,7 +189,7 @@ const LoginPage = ({ onLogin }) => {
             )
         }
         renderButton();
-    })
+    },[state])
 
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 md:p-12 max-w-md mx-auto">
