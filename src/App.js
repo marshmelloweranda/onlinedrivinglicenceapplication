@@ -6,107 +6,107 @@ import { useSearchParams } from "react-router-dom"; // Assuming you are using re
 
 // Icon component for easily rendering SVG icons
 const Icon = ({ path, className = 'w-6 h-6' }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d={path} />
-  </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path d={path} />
+    </svg>
 );
 
 // --- SVG Icons ---
 const ICONS = {
-  check: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z",
-  user: "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
-  document: "M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z",
-  arrowRight: "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z",
-  car: "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z",
-  spinner: "M12 6v2.45c-2.3.64-4 2.72-4 5.05s1.7 4.41 4 5.05V21c-4.42 0-8-3.58-8-8s3.58-8 8-8zm0 13v-2.45c2.3-.64 4-2.72 4-5.05s-1.7-4.41-4-5.05V3c4.42 0 8 3.58 8 8s-3.58 8-8 8z"
+    check: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z",
+    user: "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
+    document: "M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z",
+    arrowRight: "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z",
+    car: "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z",
+    spinner: "M12 6v2.45c-2.3.64-4 2.72-4 5.05s1.7 4.41 4 5.05V21c-4.42 0-8-3.58-8-8s3.58-8 8-8zm0 13v-2.45c2.3-.64 4-2.72 4-5.05s-1.7-4.41-4-5.05V3c4.42 0 8 3.58 8 8s-3.58 8-8 8z"
 };
 
 // --- Main App Component ---
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('login');
-  const [formData, setFormData] = useState({});
-  const [userData, setUserData] = useState(null);
+    const [currentPage, setCurrentPage] = useState('login');
+    const [formData, setFormData] = useState({});
+    const [userData, setUserData] = useState(null);
 
-  const handleLogin = (nic) => {
-    // Simulate API call to SLUDI
-    const mockUserData = {
-      fullName: "Kasun Asanka Silva",
-      nic: nic,
-      dob: "1999-09-15",
-      bloodGroup: "O+",
-      address: "No. 123, Galle Road, Colombo 03",
-      phone: "0771234567",
-      email: "kasun.silva@email.com",
-      photoUrl: `./person1.jpeg`
+    const handleLogin = (nic) => {
+        // Simulate API call to SLUDI
+        const mockUserData = {
+            fullName: "Kasun Asanka Silva",
+            nic: nic,
+            dob: "1999-09-15",
+            bloodGroup: "O+",
+            address: "No. 123, Galle Road, Colombo 03",
+            phone: "0771234567",
+            email: "kasun.silva@email.com",
+            photoUrl: `./person1.jpeg`
+        };
+        setUserData(mockUserData);
+        setFormData(mockUserData);
+        setCurrentPage('application');
     };
-    setUserData(mockUserData);
-    setFormData(mockUserData);
-    setCurrentPage('application');
-  };
 
-  const handleSubmit = (data) => {
-    setFormData(data);
-    setCurrentPage('review');
-  };
-  
-  const handlePaymentSuccess = () => {
-    console.log("Payment Successful. Submitting Application:", formData);
-    setCurrentPage('confirmation');
-  };
-  
-  const handleEdit = () => {
-      setCurrentPage('application');
-  }
+    const handleSubmit = (data) => {
+        setFormData(data);
+        setCurrentPage('review');
+    };
 
-  const handleResubmit = () => {
-      setFormData({});
-      setUserData(null);
-      setCurrentPage('login');
-  }
+    const handlePaymentSuccess = () => {
+        console.log("Payment Successful. Submitting Application:", formData);
+        setCurrentPage('confirmation');
+    };
 
-  const handleLoginWithSLUDI = () => {
-    setCurrentPage('userprofile');
-  }
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'login':
-        return <LoginPage onLogin={handleLogin} />;
-      case 'application':
-        return <ApplicationPage onSubmit={handleSubmit} initialData={formData} />;
-      case 'review':
-        return <ReviewPage formData={formData} onConfirm={() => setCurrentPage('payment')} onEdit={handleEdit} />;
-      case 'payment':
-        return <PaymentPage onPaymentSuccess={handlePaymentSuccess} />;
-      case 'confirmation':
-        return <ConfirmationPage onResubmit={handleResubmit} />;
-      case 'userprofile':
-        return <UserProfile onSubmitToSLUDI={handleLoginWithSLUDI} />;
-      default:
-        return <LoginPage onLogin={handleLogin} />;
+    const handleEdit = () => {
+        setCurrentPage('application');
     }
-  };
 
-  return (
-    <div className="bg-gray-50 min-h-screen font-sans">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Department of Motor Traffic</h1>
-            <p className="text-sm text-gray-600">Online Driving Licence Application</p>
-          </div>
-          <nav className="space-x-4 text-sm font-medium">
-             {currentPage !== 'login' && <a href="#" onClick={handleResubmit} className="text-gray-500 hover:text-gray-900">Logout</a>}
-            <a href="#" className="text-gray-500 hover:text-gray-900">Check Status</a>
-            <a href="#" className="text-gray-500 hover:text-gray-900">Contact Us</a>
-          </nav>
+    const handleResubmit = () => {
+        setFormData({});
+        setUserData(null);
+        setCurrentPage('login');
+    }
+
+    const handleLoginWithSLUDI = () => {
+        setCurrentPage('userprofile');
+    }
+
+    const renderPage = () => {
+        switch (currentPage) {
+            case 'login':
+                return <LoginPage onLogin={handleLogin} />;
+            case 'application':
+                return <ApplicationPage onSubmit={handleSubmit} initialData={formData} />;
+            case 'review':
+                return <ReviewPage formData={formData} onConfirm={() => setCurrentPage('payment')} onEdit={handleEdit} />;
+            case 'payment':
+                return <PaymentPage onPaymentSuccess={handlePaymentSuccess} />;
+            case 'confirmation':
+                return <ConfirmationPage onResubmit={handleResubmit} />;
+            case 'userprofile':
+                return <UserProfile onSubmitToSLUDI={handleLoginWithSLUDI} />;
+            default:
+                return <LoginPage onLogin={handleLogin} />;
+        }
+    };
+
+    return (
+        <div className="bg-gray-50 min-h-screen font-sans">
+            <header className="bg-white shadow-sm">
+                <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">Department of Motor Traffic</h1>
+                        <p className="text-sm text-gray-600">Online Driving Licence Application</p>
+                    </div>
+                    <nav className="space-x-4 text-sm font-medium">
+                        {currentPage !== 'login' && <a href="#" onClick={handleResubmit} className="text-gray-500 hover:text-gray-900">Logout</a>}
+                        <a href="#" className="text-gray-500 hover:text-gray-900">Check Status</a>
+                        <a href="#" className="text-gray-500 hover:text-gray-900">Contact Us</a>
+                    </nav>
+                </div>
+            </header>
+            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                {renderPage()}
+            </main>
         </div>
-      </header>
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {renderPage()}
-      </main>
-    </div>
-  );
+    );
 }
 
 // --- Page Components ---
@@ -122,7 +122,7 @@ const LoginPage = ({ onLogin }) => {
         const renderButton = () => {
             window.SignInWithEsignetButton?.init(
                 {
-                    oldConfig: {
+                    oidcConfig: {
                         acr_values: 'mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:static-code',
                         authorizeUri: 'https://esignet.dev.mosip.net/authorize',
                         claims_locales: 'en',
@@ -137,11 +137,48 @@ const LoginPage = ({ onLogin }) => {
                         ui_locales: 'en'
                     },
                     buttonConfig: {
+
+                        customStyle: {
+                            labelSpanStyle: {
+                                display: 'inline-block',
+                                'font-size': '0.875rem',
+                                'font-weight': '600',
+                                'line-height': '1.25rem',
+                                'vertical-align': 'middle',
+                            },
+                            logoDivStyle: {
+                                alignItems: 'center',
+                                background: 'white',
+                                border: '1px solid #0E3572',
+                                'border-radius': '18px',
+                                display: 'inline-block',
+                                height: '30px',
+                                position: 'absolute',
+                                right: '8px',
+                                verticalAlign: 'middle',
+                                width: '30px'
+                            },
+                            logoImgStyle: {
+                                height: '29px',
+                                'object-fit': 'contain',
+                                width: '29px'
+                            },
+                            outerDivStyleStandard: {
+                                'align-items': 'center',
+                                background: '#0E3572',
+                                border: '1px solid #0E3572',
+                                'border-radius': '0.375rem',
+                                color: 'white',
+                                display: 'flex',
+                                padding: '0.625rem 1.25rem',
+                                position: 'relative',
+                                'text-decoration': 'none',
+                                width: '250px',
+                            }
+                        },
                         labelText: 'Sign in with SLUDI',
-                        shape: 'soft_edges',
-                        theme: 'filled_orange',
-                        type: 'standard'
-                                            },
+
+                    },
                     signInElement: document.getElementById('sign-in-with-esignet'),
                 }
             )
@@ -162,7 +199,7 @@ const LoginPage = ({ onLogin }) => {
                     </button>
                 </div>
                 <div>
-                    <div id="sign-in-with-esignet" style={{width: '100%'}}></div>
+                    <div id="sign-in-with-esignet" style={{ width: '100%', alignItems: 'center', display: 'flex', justifyContent: 'center' }}></div>
                 </div>
             </form>
         </div>
@@ -170,59 +207,59 @@ const LoginPage = ({ onLogin }) => {
 };
 
 const ApplicationPage = ({ onSubmit, initialData }) => {
-  const [step, setStep] = useState(1);
-  const [formState, setFormState] = useState(initialData || {});
+    const [step, setStep] = useState(1);
+    const [formState, setFormState] = useState(initialData || {});
 
-  const handleNext = () => setStep(prev => prev + 1);
-  const handleBack = () => setStep(prev => prev - 1);
-  
-  const handleChange = (e) => {
-      const { name, value, type, checked } = e.target;
-      setFormState(prev => ({
-          ...prev, 
-          [name]: type === 'checkbox' ? checked : value
-      }));
-  }
+    const handleNext = () => setStep(prev => prev + 1);
+    const handleBack = () => setStep(prev => prev - 1);
 
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return <PersonalDetailsStep data={formState} />;
-      case 2:
-        return <MedicalCertificateStep data={formState} setData={setFormState} />;
-      case 3:
-        return <LicenceDetailsStep data={formState} onChange={handleChange} />;
-      default:
-        return null;
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormState(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     }
-  };
-  
-  const totalSteps = 3;
-  const isLastStep = step === totalSteps;
 
-  return (
-    <div className="bg-white rounded-lg shadow-xl p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">New Driving Licence Application</h2>
-        <p className="text-gray-600 mb-6">Step {step} of {totalSteps} - {['Personal Details', 'Medical Certificate', 'Licence Category'][step-1]}</p>
-        
-        <div className="mb-8">
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${(step/totalSteps)*100}%` }}></div>
-          </div>
+    const renderStep = () => {
+        switch (step) {
+            case 1:
+                return <PersonalDetailsStep data={formState} />;
+            case 2:
+                return <MedicalCertificateStep data={formState} setData={setFormState} />;
+            case 3:
+                return <LicenceDetailsStep data={formState} onChange={handleChange} />;
+            default:
+                return null;
+        }
+    };
+
+    const totalSteps = 3;
+    const isLastStep = step === totalSteps;
+
+    return (
+        <div className="bg-white rounded-lg shadow-xl p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">New Driving Licence Application</h2>
+            <p className="text-gray-600 mb-6">Step {step} of {totalSteps} - {['Personal Details', 'Medical Certificate', 'Licence Category'][step - 1]}</p>
+
+            <div className="mb-8">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
+                </div>
+            </div>
+
+            <div>{renderStep()}</div>
+
+            <div className="mt-8 pt-6 border-t flex justify-between">
+                <button onClick={handleBack} disabled={step === 1} className="px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">Back</button>
+                {isLastStep ? (
+                    <button onClick={() => onSubmit(formState)} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Review Application</button>
+                ) : (
+                    <button onClick={handleNext} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Next Step</button>
+                )}
+            </div>
         </div>
-
-        <div>{renderStep()}</div>
-
-        <div className="mt-8 pt-6 border-t flex justify-between">
-            <button onClick={handleBack} disabled={step === 1} className="px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">Back</button>
-            {isLastStep ? (
-                <button onClick={() => onSubmit(formState)} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Review Application</button>
-            ) : (
-                <button onClick={handleNext} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Next Step</button>
-            )}
-        </div>
-    </div>
-  );
+    );
 };
 
 const ReviewPage = ({ formData, onConfirm, onEdit }) => {
@@ -254,7 +291,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
                     <p className="text-sm"><strong className="text-gray-600">Selected Categories:</strong> {selectedCategories}</p>
                 </div>
             </div>
-            
+
             <div className="mt-8 pt-6 border-t flex justify-end space-x-3">
                 <button onClick={onEdit} className="px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Edit Details</button>
                 <button onClick={onConfirm} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Proceed to Payment</button>
@@ -268,7 +305,7 @@ const PaymentPage = ({ onPaymentSuccess }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCardInfo(prev => ({...prev, [name]: value}));
+        setCardInfo(prev => ({ ...prev, [name]: value }));
     }
 
     return (
@@ -298,7 +335,7 @@ const ConfirmationPage = ({ onResubmit }) => {
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Icon path={ICONS.check} className="w-8 h-8 text-green-600"/>
+                <Icon path={ICONS.check} className="w-8 h-8 text-green-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted Successfully!</h2>
             <p className="text-gray-600 mb-4">Your application has been received. You will be notified for the written and practical tests.</p>
@@ -308,8 +345,8 @@ const ConfirmationPage = ({ onResubmit }) => {
             </div>
             <p className="text-sm text-gray-500 mt-6">You will receive an email confirmation shortly. You can use the reference number to check the status of your application online.</p>
             <div className="mt-8">
-                <button 
-                    onClick={onResubmit} 
+                <button
+                    onClick={onResubmit}
                     className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
                 >
                     Submit Another Application
@@ -321,7 +358,7 @@ const ConfirmationPage = ({ onResubmit }) => {
 
 // --- Form Step Components ---
 
-const FormInput = ({ label, name, value, onChange, placeholder, type="text", readOnly=false }) => (
+const FormInput = ({ label, name, value, onChange, placeholder, type = "text", readOnly = false }) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
         <input type={type} name={name} id={name} value={value || ''} onChange={onChange} readOnly={readOnly} className={`mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${readOnly ? 'bg-gray-100' : ''}`} placeholder={placeholder} />
@@ -352,7 +389,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
         // Simulate API call
         setTimeout(() => {
             const medicalData = { medicalStatus: "Valid", medicalDate: "2025-08-15" };
-            setData(prev => ({...prev, ...medicalData}));
+            setData(prev => ({ ...prev, ...medicalData }));
             setIsLoading(false);
             setIsFetched(true);
         }, 1500);
@@ -362,7 +399,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
         <div className="text-center p-8">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Fetch Medical Certificate</h3>
             <p className="text-sm text-gray-500 mb-6">Click the button below to fetch your latest medical certificate from the national health database.</p>
-            
+
             {!isFetched && !isLoading && (
                 <button onClick={handleFetchMedical} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
                     Fetch Certificate
@@ -370,7 +407,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
             )}
 
             {isLoading && (
-                 <div className="flex justify-center items-center space-x-2 text-gray-600">
+                <div className="flex justify-center items-center space-x-2 text-gray-600">
                     <Icon path={ICONS.spinner} className="animate-spin w-6 h-6" />
                     <span>Fetching data...</span>
                 </div>
@@ -414,7 +451,7 @@ const CheckboxCard = ({ id, label, description, data, onChange }) => (
 
 
 
-const UserProfile = ({onSubmitToSLUDI}) => {
+const UserProfile = ({ onSubmitToSLUDI }) => {
     // Correctly defined status object
     const status = {
         LOADING: "LOADING",
@@ -424,17 +461,15 @@ const UserProfile = ({onSubmitToSLUDI}) => {
     };
 
     // --- CORRECTION 1: Added a state variable to hold the current status ---
-    // The component was missing a state to track its current status (e.g., loading, loaded, error).
     const [currentStatus, setStatus] = useState(status.LOADING);
 
-    const [searchParams, setSearchParams] = useSearchParams(); // Renamed for clarity to follow convention
+    const [searchParams] = useSearchParams(); // Renamed for clarity to follow convention
     const [error, setError] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
 
     // Handle login API integration
     const getUserDetails = async (authcode) => {
         // --- CORRECTION 2: Set status to AUTHENTICATING before API call ---
-        // This gives better feedback to the user.
         setStatus(status.AUTHENTICATING);
         setError(null);
         setUserInfo(null);
@@ -448,7 +483,6 @@ const UserProfile = ({onSubmitToSLUDI}) => {
             });
 
             // --- CORRECTION 3: Changed 'var' to 'const' ---
-            // It's modern practice to use 'const' or 'let' instead of 'var'.
             const userInfoData = response.data;
 
             setUserInfo(userInfoData);
@@ -461,16 +495,14 @@ const UserProfile = ({onSubmitToSLUDI}) => {
     };
 
     useEffect(() => {
-        const getQueryParams = () => { // Removed async as it's not needed here
+        const getQueryParams = () => {
             // --- CORRECTION 4: Used the state variable 'searchParams' to get values ---
-            // The original code incorrectly used the setter function 'setSearchparams'.
             let authCode = searchParams.get("code");
             let errorCode = searchParams.get("error");
             let error_desc = searchParams.get("error_description");
 
             if (errorCode) {
                 // --- CORRECTION 5: Handle the error from query params properly ---
-                // The original code would just return, leaving a blank screen.
                 setError({
                     errorCode: errorCode,
                     errorMsg: error_desc || "An error occurred during authentication.",
@@ -487,13 +519,12 @@ const UserProfile = ({onSubmitToSLUDI}) => {
                     errorMsg: "Authentication code is missing from the URL.",
                 });
                 // --- CORRECTION 6: Used the correct status object ---
-                // The original code had a typo: 'StyleSheetList.ERROR'.
                 setStatus(status.ERROR);
             }
         };
 
         getQueryParams();
-    }, []); // The empty dependency array is correct for running this once on mount
+    }, [searchParams]); // Dependency array updated to avoid missing dependency warning
 
     return (
         <div>
@@ -501,8 +532,7 @@ const UserProfile = ({onSubmitToSLUDI}) => {
             <div className='header'>Welcome {userInfo?.name}</div>
 
             {/* --- CORRECTION 7: Used the 'currentStatus' state for conditional rendering --- */}
-            {/* The original code incorrectly compared the status object to itself (e.g., status === status.LOADING) */}
-            
+
             {currentStatus === status.LOADING && <div>Loading Please Wait...</div>}
             {currentStatus === status.AUTHENTICATING && <div>Authenticating and fetching user details...</div>}
 
