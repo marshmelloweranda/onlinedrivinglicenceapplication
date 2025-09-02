@@ -145,7 +145,7 @@ const LoginPage = ({ onLogin }) => {
                 window.SignInWithEsignetButton.init({
                     oidcConfig: {
                         acr_values: 'mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:static-code',
-                        authorizeUri: 'http://localhost:8088/authorize',
+                        authorizeUri: 'http://localhost:3000/authorize',
                         claims_locales: 'en',
                         client_id: 'IIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArpXLs',
                         display: 'page',
