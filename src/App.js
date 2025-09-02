@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
-import { useSearchParams } from "react-router-dom"; // Assuming you are using react-router-dom
-import { useExternalScript } from './useExternalScript';
+// Imports for routing
+import { BrowserRouter, Routes, Route, useNavigate, useSearchParams } from "react-router-dom";
+import { useExternalScript } from './useExternalScript'; // Assuming this custom hook exists in your project
 
 // --- Helper Components ---
 
@@ -22,9 +23,12 @@ const ICONS = {
     spinner: "M12 6v2.45c-2.3.64-4 2.72-4 5.05s1.7 4.41 4 5.05V21c-4.42 0-8-3.58-8-8s3.58-8 8-8zm0 13v-2.45c2.3-.64 4-2.72 4-5.05s-1.7-4.41-4-5.05V3c4.42 0 8 3.58 8 8s-3.58 8-8 8z"
 };
 
-// --- Main App Component ---
-export default function App() {
-    const [currentPage, setCurrentPage] = useState('login');
+
+// --- Main App Component (Refactored for Routing) ---
+
+// This inner component contains the application logic and can use router hooks
+const AppContent = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({});
     const [userData, setUserData] = useState(null);
 
@@ -42,51 +46,35 @@ export default function App() {
         };
         setUserData(mockUserData);
         setFormData(mockUserData);
-        setCurrentPage('application');
+        navigate('/application');
     };
 
     const handleSubmit = (data) => {
         setFormData(data);
-        setCurrentPage('review');
+        navigate('/review');
     };
 
     const handlePaymentSuccess = () => {
         console.log("Payment Successful. Submitting Application:", formData);
-        setCurrentPage('confirmation');
+        navigate('/confirmation');
     };
 
     const handleEdit = () => {
-        setCurrentPage('application');
+        navigate('/application');
     }
 
     const handleResubmit = () => {
         setFormData({});
         setUserData(null);
-        setCurrentPage('login');
+        navigate('/');
     }
 
-    const handleLoginWithSLUDI = () => {
-        setCurrentPage('userprofile');
+    // Passed to UserProfile to proceed after a successful SLUDI login
+    const proceedToApplication = () => {
+        // In a real app, you might receive user data from the UserProfile component
+        // and set it in the state here before navigating.
+        navigate('/application');
     }
-
-    const renderPage = () => {
-        switch (currentPage) {
-            case 'login':
-                return <LoginPage onLogin={handleLogin} />;
-            case 'application':
-                return <ApplicationPage onSubmit={handleSubmit} initialData={formData} />;
-            case 'review':
-                return <ReviewPage formData={formData} onConfirm={() => setCurrentPage('payment')} onEdit={handleEdit} />;
-            case 'payment':
-                return <PaymentPage onPaymentSuccess={handlePaymentSuccess} />;
-            case 'confirmation':
-                return <ConfirmationPage onResubmit={handleResubmit} />;
-            case 'userprofile':
-                return <UserProfile onSubmitToSLUDI={handleLoginWithSLUDI} />;
-            default:
-                return <LoginPage onLogin={handleLogin} />;
-        }
-    };
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans">
@@ -97,16 +85,32 @@ export default function App() {
                         <p className="text-sm text-gray-600">Online Driving Licence Application</p>
                     </div>
                     <nav className="space-x-4 text-sm font-medium">
-                        {currentPage !== 'login' && <a href="#" onClick={handleResubmit} className="text-gray-500 hover:text-gray-900">Logout</a>}
+                        <a href="#" onClick={handleResubmit} className="text-gray-500 hover:text-gray-900">Logout</a>
                         <a href="#" className="text-gray-500 hover:text-gray-900">Check Status</a>
                         <a href="#" className="text-gray-500 hover:text-gray-900">Contact Us</a>
                     </nav>
                 </div>
             </header>
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                {renderPage()}
+                <Routes>
+                    <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
+                    <Route path="/userprofile" element={<UserProfile onSubmitToSLUDI={proceedToApplication} />} />
+                    <Route path="/application" element={<ApplicationPage onSubmit={handleSubmit} initialData={formData} />} />
+                    <Route path="/review" element={<ReviewPage formData={formData} onConfirm={() => navigate('/payment')} onEdit={handleEdit} />} />
+                    <Route path="/payment" element={<PaymentPage onPaymentSuccess={handlePaymentSuccess} />} />
+                    <Route path="/confirmation" element={<ConfirmationPage onResubmit={handleResubmit} />} />
+                </Routes>
             </main>
         </div>
+    );
+};
+
+// The main export wraps the entire application in the router
+export default function App() {
+    return (
+        <BrowserRouter>
+            <AppContent />
+        </BrowserRouter>
     );
 }
 
@@ -122,74 +126,55 @@ const LoginPage = ({ onLogin }) => {
 
     const signInButtonScript = "https://sludiauth.icta.gov.lk/plugins/sign-in-button-plugin.js";
     const state = useExternalScript(signInButtonScript);
+    const claims = {
+        userinfo: {
+            given_name: { essential: true },
+            phone_number: { essential: false },
+            email: { essential: true },
+            picture: { essential: false },
+            gender: { essential: false },
+            birthdate: { essential: false },
+            address: { essential: false },
+        },
+        id_token: {},
+    };
 
     useEffect(() => {
         const renderButton = () => {
-            window.SignInWithEsignetButton?.init(
-                {
+            if (window.SignInWithEsignetButton) {
+                window.SignInWithEsignetButton.init({
                     oidcConfig: {
                         acr_values: 'mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:static-code',
-                        authorizeUri: 'https://sludiauth.icta.gov.lk/authorize',
+                        authorizeUri: 'http://localhost:8088/authorize',
                         claims_locales: 'en',
                         client_id: 'IIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArpXLs',
                         display: 'page',
                         max_age: 21,
                         nonce: 'ere973eieljznge2311',
                         prompt: 'consent',
-                        redirect_uri: 'http://localhost:5000/userprofile',
-                        scope: 'openid profile',
+                        redirect_uri: 'http://localhost:3001/userprofile',
+                        scope: 'openid%20profile%20resident-service',
                         state: 'eree2311',
-                        ui_locales: 'en'
+                        ui_locales: 'en',
+                        claims: JSON.stringify(claims),
                     },
                     buttonConfig: {
-
                         customStyle: {
-                            labelSpanStyle: {
-                                display: 'inline-block',
-                                'font-size': '0.875rem',
-                                'font-weight': '600',
-                                'line-height': '1.25rem',
-                                'vertical-align': 'middle',
-                            },
-                            logoDivStyle: {
-                                alignItems: 'center',
-                                background: 'white',
-                                border: '1px solid #0E3572',
-                                'border-radius': '18px',
-                                display: 'inline-block',
-                                height: '30px',
-                                position: 'absolute',
-                                right: '8px',
-                                verticalAlign: 'middle',
-                                width: '30px'
-                            },
-                            logoImgStyle: {
-                                height: '29px',
-                                'object-fit': 'contain',
-                                width: '29px'
-                            },
-                            outerDivStyleStandard: {
-                                'align-items': 'center',
-                                background: '#0E3572',
-                                border: '1px solid #0E3572',
-                                'border-radius': '0.375rem',
-                                color: 'white',
-                                display: 'flex',
-                                padding: '0.625rem 1.25rem',
-                                position: 'relative',
-                                'text-decoration': 'none',
-                                width: '250px',
-                            }
+                            labelSpanStyle: { display: 'inline-block', 'font-size': '0.875rem', 'font-weight': '600', 'line-height': '1.25rem', 'vertical-align': 'middle' },
+                            logoDivStyle: { alignItems: 'center', background: 'white', border: '1px solid #0E3572', 'border-radius': '18px', display: 'inline-block', height: '30px', position: 'absolute', right: '8px', verticalAlign: 'middle', width: '30px' },
+                            logoImgStyle: { height: '29px', 'object-fit': 'contain', width: '29px' },
+                            outerDivStyleStandard: { 'align-items': 'center', background: '#0E3572', border: '1px solid #0E3572', 'border-radius': '0.375rem', color: 'white', display: 'flex', padding: '0.625rem 1.25rem', position: 'relative', 'text-decoration': 'none', width: '250px' }
                         },
                         labelText: 'Sign in with SLUDI',
-
                     },
                     signInElement: document.getElementById('sign-in-with-esignet'),
-                }
-            )
+                });
+            }
         }
-        renderButton();
-    },[state])
+        if (state === 'ready') {
+            renderButton();
+        }
+    }, [state]);
 
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 md:p-12 max-w-md mx-auto">
@@ -202,6 +187,14 @@ const LoginPage = ({ onLogin }) => {
                     <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Login & Fetch Details
                     </button>
+                </div>
+                <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-white text-gray-500">Or</span>
+                    </div>
                 </div>
                 <div>
                     <div id="sign-in-with-esignet" style={{ width: '100%', alignItems: 'center', display: 'flex', justifyContent: 'center' }}></div>
@@ -278,7 +271,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
             <div className="space-y-6">
                 <div className="border-b pb-4">
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">Personal Details</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <p><strong className="text-gray-600">Full Name:</strong> {formData.fullName}</p>
                         <p><strong className="text-gray-600">NIC:</strong> {formData.nic}</p>
                         <p><strong className="text-gray-600">Date of Birth:</strong> {formData.dob}</p>
@@ -346,7 +339,7 @@ const ConfirmationPage = ({ onResubmit }) => {
             <p className="text-gray-600 mb-4">Your application has been received. You will be notified for the written and practical tests.</p>
             <div className="bg-gray-100 p-4 rounded-md inline-block">
                 <p className="text-sm text-gray-600">Your Application Reference Number is:</p>
-                <p className="text-lg font-bold text-indigo-600">SLDL-2024-117892</p>
+                <p className="text-lg font-bold text-indigo-600">SLDL-2025-117892</p>
             </div>
             <p className="text-sm text-gray-500 mt-6">You will receive an email confirmation shortly. You can use the reference number to check the status of your application online.</p>
             <div className="mt-8">
@@ -360,6 +353,107 @@ const ConfirmationPage = ({ onResubmit }) => {
         </div>
     );
 };
+
+
+const UserProfile = ({ onSubmitToSLUDI }) => {
+    const status = {
+        LOADING: "LOADING",
+        AUTHENTICATING: "AUTHENTICATING",
+        LOADED: "LOADED",
+        ERROR: "ERROR",
+    };
+    const [currentStatus, setStatus] = useState(status.LOADING);
+    const [searchParams] = useSearchParams();
+    const [error, setError] = useState(null);
+    const [userInfo, setUserInfo] = useState(null);
+
+    const getUserDetails = async (authcode) => {
+        setStatus(status.AUTHENTICATING);
+        setError(null);
+        setUserInfo(null);
+
+        try {
+            const endpoint = `http://localhost:8888/delegate/fetchUserInfo?code=${authcode}`;
+            const response = await axios.get(endpoint, { headers: { "Content-Type": "application/json" } });
+            const userInfoData = response.data;
+            setUserInfo(userInfoData);
+            setStatus(status.LOADED);
+        } catch (errormsg) {
+            setError({ errorCode: errormsg.code || "API_FETCH_FAILED", errorMsg: errormsg.message });
+            setStatus(status.ERROR);
+        }
+    };
+
+    useEffect(() => {
+        const getQueryParams = () => {
+            const authCode = searchParams.get("code");
+            const errorCode = searchParams.get("error");
+            const error_desc = searchParams.get("error_description");
+
+            if (errorCode) {
+                setError({ errorCode: errorCode, errorMsg: error_desc || "An error occurred during authentication." });
+                setStatus(status.ERROR);
+                return;
+            }
+
+            if (authCode) {
+                getUserDetails(authCode);
+            } else {
+                setError({ errorCode: "AUTH_CODE_MISSING", errorMsg: "Authentication code is missing from the URL." });
+                setStatus(status.ERROR);
+            }
+        };
+        getQueryParams();
+    }, [searchParams]);
+
+    return (
+        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md mx-auto text-center">
+            {currentStatus === status.LOADING && (
+                <div className="flex flex-col items-center">
+                    <Icon path={ICONS.spinner} className="animate-spin w-8 h-8 text-indigo-600 mb-4" />
+                    <p className="text-gray-600">Loading, please wait...</p>
+                </div>
+            )}
+            {currentStatus === status.AUTHENTICATING && (
+                <div className="flex flex-col items-center">
+                    <Icon path={ICONS.spinner} className="animate-spin w-8 h-8 text-indigo-600 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-800">Authenticating</h3>
+                    <p className="text-gray-600">Fetching your details securely...</p>
+                </div>
+            )}
+            {currentStatus === status.LOADED && userInfo && (
+                 <div className="flex flex-col items-center">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome, {userInfo?.given_name}!</h2>
+                    <img src={userInfo?.picture} alt="User profile" className="w-32 h-32 rounded-full shadow-lg mb-4" />
+                    <div className="text-left space-y-2 bg-gray-50 p-4 rounded-lg w-full">
+                        <p><strong>Email:</strong> {userInfo?.email}</p>
+                        <p><strong>Date of Birth:</strong> {userInfo?.birthdate}</p>
+                        <p><strong>Phone:</strong> {userInfo?.phone_number || "N/A"}</p>
+                    </div>
+                     <button
+                        onClick={onSubmitToSLUDI}
+                        className="mt-6 w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                    >
+                        Proceed to Application
+                    </button>
+                </div>
+            )}
+            {currentStatus === status.ERROR && (
+                <div className="bg-red-50 p-6 rounded-lg text-red-800">
+                    <h3 className="font-bold text-lg mb-2">Oops! An error occurred.</h3>
+                    <p className="text-sm">We couldn't log you in. Please try again later.</p>
+                    {error && (
+                        <div className="mt-4 text-left bg-red-100 p-2 rounded text-xs">
+                           <p><strong>Error Code:</strong> {error.errorCode}</p>
+                           <p><strong>Details:</strong> {error.errorMsg}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 // --- Form Step Components ---
 
@@ -393,7 +487,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
         setIsLoading(true);
         // Simulate API call
         setTimeout(() => {
-            const medicalData = { medicalStatus: "Valid", medicalDate: "2025-08-15" };
+            const medicalData = { medicalStatus: "Valid", medicalDate: "2026-08-15" };
             setData(prev => ({ ...prev, ...medicalData }));
             setIsLoading(false);
             setIsFetched(true);
@@ -421,7 +515,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
             {isFetched && (
                 <div className="bg-green-50 p-4 rounded-lg text-green-800">
                     <p className="font-semibold">Medical Certificate Fetched Successfully!</p>
-                    <p className="text-sm">Status: {data.medicalStatus} (Issued: {data.medicalDate})</p>
+                    <p className="text-sm">Status: {data.medicalStatus} (Valid until: {data.medicalDate})</p>
                 </div>
             )}
         </div>
@@ -453,117 +547,3 @@ const CheckboxCard = ({ id, label, description, data, onChange }) => (
         <div className="mt-2 text-sm text-gray-600">{description}</div>
     </label>
 );
-
-
-
-const UserProfile = ({ onSubmitToSLUDI }) => {
-    // Correctly defined status object
-    const status = {
-        LOADING: "LOADING",
-        LOADED: "LOADED",
-        ERROR: "ERROR",
-        AUTHENTICATING: "AUTHENTICATING"
-    };
-
-    // --- CORRECTION 1: Added a state variable to hold the current status ---
-    const [currentStatus, setStatus] = useState(status.LOADING);
-
-    const [searchParams] = useSearchParams(); // Renamed for clarity to follow convention
-    const [error, setError] = useState(null);
-    const [userInfo, setUserInfo] = useState(null);
-
-    // Handle login API integration
-    const getUserDetails = async (authcode) => {
-        // --- CORRECTION 2: Set status to AUTHENTICATING before API call ---
-        setStatus(status.AUTHENTICATING);
-        setError(null);
-        setUserInfo(null);
-
-        try {
-            const endpoint = `http://localhost:8888/delegate/fetchUserInfo?code=${authcode}`;
-            const response = await axios.get(endpoint, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            // --- CORRECTION 3: Changed 'var' to 'const' ---
-            const userInfoData = response.data;
-
-            setUserInfo(userInfoData);
-            setStatus(status.LOADED);
-
-        } catch (errormsg) {
-            setError({ errorCode: errormsg.code || "API_FETCH_FAILED", errorMsg: errormsg.message });
-            setStatus(status.ERROR);
-        }
-    };
-
-    useEffect(() => {
-        const getQueryParams = () => {
-            // --- CORRECTION 4: Used the state variable 'searchParams' to get values ---
-            let authCode = searchParams.get("code");
-            let errorCode = searchParams.get("error");
-            let error_desc = searchParams.get("error_description");
-
-            if (errorCode) {
-                // --- CORRECTION 5: Handle the error from query params properly ---
-                setError({
-                    errorCode: errorCode,
-                    errorMsg: error_desc || "An error occurred during authentication.",
-                });
-                setStatus(status.ERROR);
-                return;
-            }
-
-            if (authCode) {
-                getUserDetails(authCode);
-            } else {
-                setError({
-                    errorCode: "AUTH_CODE_MISSING",
-                    errorMsg: "Authentication code is missing from the URL.",
-                });
-                // --- CORRECTION 6: Used the correct status object ---
-                setStatus(status.ERROR);
-            }
-        };
-
-        getQueryParams();
-    }, [searchParams]); // Dependency array updated to avoid missing dependency warning
-
-    return (
-        <div>
-            {/* The header can show the name once loaded */}
-            <div className='header'>Welcome {userInfo?.name}</div>
-
-            {/* --- CORRECTION 7: Used the 'currentStatus' state for conditional rendering --- */}
-
-            {currentStatus === status.LOADING && <div>Loading Please Wait...</div>}
-            {currentStatus === status.AUTHENTICATING && <div>Authenticating and fetching user details...</div>}
-
-            {currentStatus === status.LOADED && userInfo && (
-                <div>
-                    <div className="card">
-                        <img src={userInfo?.picture} alt="User profile" style={{ width: "100%" }} />
-                        <div className='color-black mt-5 mb-10'>{userInfo?.email}</div>
-                        <div className="color-black mb-10">
-                            Date of Birth: <span className="title color-black">{userInfo?.birthdate}</span>
-                        </div>
-                        <div>
-                            Phone: <span>{userInfo?.phone_number}</span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {currentStatus === status.ERROR && (
-                <div>
-                    <h3>Oops! An error occurred.</h3>
-                    <p>Please try again after some time.</p>
-                    {/* Optionally display the error message for debugging */}
-                    {error && <pre style={{ color: 'red' }}><code>Error Code: {error.errorCode}<br />{error.errorMsg}</code></pre>}
-                </div>
-            )}
-        </div>
-    );
-};
