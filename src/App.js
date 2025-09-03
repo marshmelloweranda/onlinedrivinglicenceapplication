@@ -3,7 +3,7 @@ import axios from "axios";
 // Imports for routing
 import { BrowserRouter, Routes, Route, useNavigate, useSearchParams } from "react-router-dom";
 import { useExternalScript } from './useExternalScript'; // Assuming this custom hook exists in your project
-
+import clientDetails from "./constants/clientDetails"; // Assuming clientDetails is exported from this path
 // --- Helper Components ---
 
 // Icon component for easily rendering SVG icons
@@ -124,8 +124,9 @@ const LoginPage = ({ onLogin }) => {
         if (nic) onLogin(nic);
     }
 
-    const signInButtonScript = "https://sludiauth.icta.gov.lk/plugins/sign-in-button-plugin.js";
+    const signInButtonScript = "http://localhost:3000/plugins/sign-in-button-plugin.js";
     const state = useExternalScript(signInButtonScript);
+    
     const claims = {
         userinfo: {
             given_name: { essential: true },
@@ -139,25 +140,28 @@ const LoginPage = ({ onLogin }) => {
         id_token: {},
     };
 
+    const oidcConfig = {
+      authorizeUri: clientDetails.uibaseUrl + clientDetails.authorizeEndpoint,
+      redirect_uri: clientDetails.redirect_uri_userprofile,
+      client_id: clientDetails.clientId,
+      scope: clientDetails.scopeUserProfile,
+      nonce: clientDetails.nonce,
+      state: clientDetails.state,
+      acr_values: clientDetails.acr_values,
+      claims_locales: clientDetails.claims_locales,
+      display: clientDetails.display,
+      prompt: clientDetails.prompt,
+      max_age: clientDetails.max_age,
+      ui_locales: "en",
+      claims: JSON.parse(decodeURIComponent(clientDetails.userProfileClaims)),
+    };
+
+
     useEffect(() => {
         const renderButton = () => {
             if (window.SignInWithEsignetButton) {
                 window.SignInWithEsignetButton.init({
-                    oidcConfig: {
-                        acr_values: 'mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:static-code',
-                        authorizeUri: 'http://localhost:3000/authorize',
-                        claims_locales: 'en',
-                        client_id: 'IIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArpXLs',
-                        display: 'page',
-                        max_age: 21,
-                        nonce: 'ere973eieljznge2311',
-                        prompt: 'consent',
-                        redirect_uri: 'http://localhost:3001/userprofile',
-                        scope: 'openid%20profile%20resident-service',
-                        state: 'eree2311',
-                        ui_locales: 'en',
-                        claims: JSON.stringify(claims),
-                    },
+                    oidcConfig:oidcConfig,
                     buttonConfig: {
                         customStyle: {
                             labelSpanStyle: { display: 'inline-block', 'font-size': '0.875rem', 'font-weight': '600', 'line-height': '1.25rem', 'vertical-align': 'middle' },
