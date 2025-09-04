@@ -20,7 +20,7 @@ const ICONS = {
     document: "M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z",
     arrowRight: "M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z",
     car: "M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z",
-    spinner: "M12 6v2.45c-2.3.64-4 2.72-4 5.05s1.7 4.41 4 5.05V21c-4.42 0-8-3.58-8-8s3.58-8 8-8zm0 13v-2.45c2.3-.64 4-2.72 4-5.05s-1.7-4.41-4-5.05V3c4.42 0 8 3.58 8 8s-3.58 8-8 8z"
+    spinner: "M12 4V2A10 10 0 0 0 2 12h2A8 8 0 0 1 12 4z" // A simpler spinner for animation
 };
 
 
@@ -42,7 +42,8 @@ const AppContent = () => {
             address: "No. 123, Galle Road, Colombo 03",
             phone: "0771234567",
             email: "kasun.silva@email.com",
-            photoUrl: `./person1.jpeg`
+            // CORRECTED PATH: Assumes person1.jpeg is in the /public folder
+            photoUrl: `/person1.jpeg` 
         };
         setUserData(mockUserData);
         setFormData(mockUserData);
@@ -70,9 +71,19 @@ const AppContent = () => {
     }
 
     // Passed to UserProfile to proceed after a successful SLUDI login
-    const proceedToApplication = () => {
-        // In a real app, you might receive user data from the UserProfile component
-        // and set it in the state here before navigating.
+    const proceedToApplication = (sludiData) => {
+        // Here you would map the data from SLUDI to your application's state
+         const mappedUserData = {
+            fullName: sludiData.given_name,
+            nic: sludiData.sub, // Assuming 'sub' is the NIC from the token
+            dob: sludiData.birthdate,
+            address: sludiData.address?.formatted || "No address provided",
+            phone: sludiData.phone_number,
+            email: sludiData.email,
+            photoUrl: sludiData.picture || '/default-avatar.png' // Provide a fallback avatar
+        };
+        setUserData(mappedUserData);
+        setFormData(mappedUserData);
         navigate('/application');
     }
 
@@ -85,7 +96,7 @@ const AppContent = () => {
                         <p className="text-sm text-gray-600">Online Driving Licence Application</p>
                     </div>
                     <nav className="space-x-4 text-sm font-medium">
-                        <a href="#" onClick={handleResubmit} className="text-gray-500 hover:text-gray-900">Logout</a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); handleResubmit(); }} className="text-gray-500 hover:text-gray-900">Logout</a>
                         <a href="#" className="text-gray-500 hover:text-gray-900">Check Status</a>
                         <a href="#" className="text-gray-500 hover:text-gray-900">Contact Us</a>
                     </nav>
@@ -124,21 +135,12 @@ const LoginPage = ({ onLogin }) => {
         if (nic) onLogin(nic);
     }
 
-    const signInButtonScript = "http://localhost:3000/plugins/sign-in-button-plugin.js";
+    // CORRECTED PATH: Relative path to the public folder
+    const signInButtonScript = "/plugins/sign-in-button-plugin.js";
     const state = useExternalScript(signInButtonScript);
     
-    const claims = {
-        userinfo: {
-            given_name: { essential: true },
-            phone_number: { essential: false },
-            email: { essential: true },
-            picture: { essential: false },
-            gender: { essential: false },
-            birthdate: { essential: false },
-            address: { essential: false },
-        },
-        id_token: {},
-    };
+    // The claims object in oidcConfig should directly use the decoded object
+    const claims = JSON.parse(decodeURIComponent(clientDetails.userProfileClaims));
 
     const oidcConfig = {
       authorizeUri: clientDetails.uibaseUrl + clientDetails.authorizeEndpoint,
@@ -153,7 +155,7 @@ const LoginPage = ({ onLogin }) => {
       prompt: clientDetails.prompt,
       max_age: clientDetails.max_age,
       ui_locales: "en",
-      claims: JSON.parse(decodeURIComponent(clientDetails.userProfileClaims)),
+      claims: claims, // Use the parsed claims object
     };
 
 
@@ -178,7 +180,7 @@ const LoginPage = ({ onLogin }) => {
         if (state === 'ready') {
             renderButton();
         }
-    }, [state]);
+    }, [state]); // oidcConfig is not needed as a dependency if it doesn't change
 
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 md:p-12 max-w-md mx-auto">
@@ -201,7 +203,10 @@ const LoginPage = ({ onLogin }) => {
                     </div>
                 </div>
                 <div>
-                    <div id="sign-in-with-esignet" style={{ width: '100%', alignItems: 'center', display: 'flex', justifyContent: 'center' }}></div>
+                    <div id="sign-in-with-esignet" style={{ width: '100%', alignItems: 'center', display: 'flex', justifyContent: 'center' }}>
+                         {state === 'loading' && <p>Loading Login Button...</p>}
+                         {state === 'error' && <p>Error loading login button.</p>}
+                    </div>
                 </div>
             </form>
         </div>
@@ -211,6 +216,12 @@ const LoginPage = ({ onLogin }) => {
 const ApplicationPage = ({ onSubmit, initialData }) => {
     const [step, setStep] = useState(1);
     const [formState, setFormState] = useState(initialData || {});
+
+    // Effect to reset step if initialData changes (e.g., on a new login)
+    useEffect(() => {
+        setFormState(initialData);
+        setStep(1); 
+    }, [initialData]);
 
     const handleNext = () => setStep(prev => prev + 1);
     const handleBack = () => setStep(prev => prev - 1);
@@ -253,7 +264,7 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
             <div>{renderStep()}</div>
 
             <div className="mt-8 pt-6 border-t flex justify-between">
-                <button onClick={handleBack} disabled={step === 1} className="px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">Back</button>
+                <button onClick={handleBack} disabled={step === 1} className="px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
                 {isLastStep ? (
                     <button onClick={() => onSubmit(formState)} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Review Application</button>
                 ) : (
@@ -265,7 +276,7 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
 };
 
 const ReviewPage = ({ formData, onConfirm, onEdit }) => {
-    const selectedCategories = Object.keys(formData).filter(key => ['A1', 'A', 'B1', 'B', 'C1', 'C'].includes(key) && formData[key]).join(', ');
+    const selectedCategories = Object.keys(formData).filter(key => ['A1', 'A', 'B1', 'B', 'C1', 'C'].includes(key) && formData[key]).join(', ') || 'None Selected';
 
     return (
         <div className="bg-white rounded-lg shadow-xl p-8">
@@ -285,7 +296,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
                 <div className="border-b pb-4">
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">Medical Certificate</h3>
                     <p className={`text-sm ${formData.medicalStatus === 'Valid' ? 'text-green-600' : 'text-red-600'}`}>
-                        Status: {formData.medicalStatus || 'Not fetched'} (Issued: {formData.medicalDate || 'N/A'})
+                        Status: {formData.medicalStatus || 'Not fetched'} {formData.medicalDate ? `(Issued: ${formData.medicalDate})` : ''}
                     </p>
                 </div>
                 <div>
@@ -310,11 +321,18 @@ const PaymentPage = ({ onPaymentSuccess }) => {
         setCardInfo(prev => ({ ...prev, [name]: value }));
     }
 
+    const handlePayment = (e) => {
+        e.preventDefault();
+        // Basic validation can be added here
+        console.log("Processing payment...");
+        onPaymentSuccess();
+    }
+
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-lg mx-auto">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Gateway</h2>
             <p className="text-gray-600 mb-6">Enter your card details to complete the application fee payment.</p>
-            <div className="space-y-4">
+            <form onSubmit={handlePayment} className="space-y-4">
                 <FormInput label="Card Number" name="cardNumber" value={cardInfo.cardNumber} onChange={handleChange} placeholder="0000 0000 0000 0000" />
                 <div className="grid grid-cols-3 gap-4">
                     <div className="col-span-2">
@@ -323,12 +341,12 @@ const PaymentPage = ({ onPaymentSuccess }) => {
                     <FormInput label="CVC" name="cvc" value={cardInfo.cvc} onChange={handleChange} placeholder="123" />
                 </div>
                 <FormInput label="Name on Card" name="cardName" value={cardInfo.cardName} onChange={handleChange} placeholder="e.g. K. A. Silva" />
-            </div>
-            <div className="mt-8">
-                <button onClick={onPaymentSuccess} className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-                    Pay LKR 2,500.00
-                </button>
-            </div>
+                 <div className="mt-8">
+                    <button type="submit" className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                        Pay LKR 2,500.00
+                    </button>
+                </div>
+            </form>
         </div>
     );
 };
@@ -371,24 +389,44 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
     const [error, setError] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
 
-    const getUserDetails = async (authcode) => {
-        setStatus(status.AUTHENTICATING);
-        setError(null);
-        setUserInfo(null);
-
-        try {
-            const endpoint = `http://localhost:8888/delegate/fetchUserInfo?code=${authcode}`;
-            const response = await axios.get(endpoint, { headers: { "Content-Type": "application/json" } });
-            const userInfoData = response.data;
-            setUserInfo(userInfoData);
-            setStatus(status.LOADED);
-        } catch (errormsg) {
-            setError({ errorCode: errormsg.code || "API_FETCH_FAILED", errorMsg: errormsg.message });
-            setStatus(status.ERROR);
-        }
-    };
-
+    // This useEffect hook should only run once on component mount.
     useEffect(() => {
+        const getUserDetails = async (authcode) => {
+            setStatus(status.AUTHENTICATING);
+            setError(null);
+            setUserInfo(null);
+
+            try {
+                // NOTE: For this to work, you need a backend server running on localhost:8888
+                // that can securely exchange the auth code for a token and user info.
+                // The frontend should NOT handle the client secret.
+                const endpoint = `http://localhost:8888/delegate/fetchUserInfo?code=${authcode}`;
+                const response = await axios.get(endpoint, { headers: { "Content-Type": "application/json" } });
+                
+                // For testing without a backend, we can use mock data
+                if (authcode === 'mock_auth_code_12345') {
+                    const mockUserInfoData = {
+                        sub: '199512345678',
+                        given_name: 'Jane Doe',
+                        email: 'jane.doe@example.com',
+                        picture: '/person1.jpeg',
+                        birthdate: '1995-05-10',
+                        phone_number: '0719876543'
+                    };
+                    setUserInfo(mockUserInfoData);
+                    setStatus(status.LOADED);
+                } else {
+                    const userInfoData = response.data;
+                    setUserInfo(userInfoData);
+                    setStatus(status.LOADED);
+                }
+            } catch (errormsg) {
+                console.error("API Fetch Error:", errormsg);
+                setError({ errorCode: errormsg.code || "API_FETCH_FAILED", errorMsg: errormsg.message });
+                setStatus(status.ERROR);
+            }
+        };
+
         const getQueryParams = () => {
             const authCode = searchParams.get("code");
             const errorCode = searchParams.get("error");
@@ -408,7 +446,7 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
             }
         };
         getQueryParams();
-    }, [searchParams]);
+    }, [searchParams]); // Dependency array ensures this runs when query params change.
 
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md mx-auto text-center">
@@ -428,14 +466,14 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
             {currentStatus === status.LOADED && userInfo && (
                  <div className="flex flex-col items-center">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome, {userInfo?.given_name}!</h2>
-                    <img src={userInfo?.picture} alt="User profile" className="w-32 h-32 rounded-full shadow-lg mb-4" />
+                    <img src={userInfo?.picture} alt="User profile" className="w-32 h-32 rounded-full shadow-lg mb-4 object-cover" />
                     <div className="text-left space-y-2 bg-gray-50 p-4 rounded-lg w-full">
                         <p><strong>Email:</strong> {userInfo?.email}</p>
                         <p><strong>Date of Birth:</strong> {userInfo?.birthdate}</p>
                         <p><strong>Phone:</strong> {userInfo?.phone_number || "N/A"}</p>
                     </div>
                      <button
-                        onClick={onSubmitToSLUDI}
+                        onClick={() => onSubmitToSLUDI(userInfo)}
                         className="mt-6 w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                     >
                         Proceed to Application
@@ -464,7 +502,7 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
 const FormInput = ({ label, name, value, onChange, placeholder, type = "text", readOnly = false }) => (
     <div>
         <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
-        <input type={type} name={name} id={name} value={value || ''} onChange={onChange} readOnly={readOnly} className={`mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${readOnly ? 'bg-gray-100' : ''}`} placeholder={placeholder} />
+        <input type={type} name={name} id={name} value={value || ''} onChange={onChange} readOnly={readOnly} className={`mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder={placeholder} />
     </div>
 );
 
@@ -543,7 +581,7 @@ const LicenceDetailsStep = ({ data, onChange }) => (
 );
 
 const CheckboxCard = ({ id, label, description, data, onChange }) => (
-    <label htmlFor={id} className={`relative flex flex-col p-4 border rounded-lg cursor-pointer ${data[id] ? 'border-indigo-600 ring-2 ring-indigo-600' : 'border-gray-300'}`}>
+    <label htmlFor={id} className={`relative flex flex-col p-4 border rounded-lg cursor-pointer transition-all duration-200 ${data[id] ? 'border-indigo-600 ring-2 ring-indigo-600 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'}`}>
         <div className="flex items-center justify-between">
             <span className="font-bold text-indigo-600">{label}</span>
             <input id={id} name={id} type="checkbox" checked={data[id] || false} onChange={onChange} className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
