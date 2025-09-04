@@ -119,7 +119,7 @@ const AppContent = () => {
 // The main export wraps the entire application in the router
 export default function App() {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename='/dmt'>
             <AppContent />
         </BrowserRouter>
     );
