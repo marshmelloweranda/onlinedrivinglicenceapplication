@@ -105,7 +105,7 @@ const AppContent = () => {
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <Routes>
                     <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
-                    <Route path="/userprofile" element={<UserProfile onSubmitToSLUDI={proceedToApplication} />} />
+                    <Route path="userprofile" element={<UserProfile onSubmitToSLUDI={proceedToApplication} />} />
                     <Route path="/application" element={<ApplicationPage onSubmit={handleSubmit} initialData={formData} />} />
                     <Route path="/review" element={<ReviewPage formData={formData} onConfirm={() => navigate('/payment')} onEdit={handleEdit} />} />
                     <Route path="/payment" element={<PaymentPage onPaymentSuccess={handlePaymentSuccess} />} />
@@ -155,7 +155,7 @@ const LoginPage = ({ onLogin }) => {
       prompt: clientDetails.prompt,
       max_age: clientDetails.max_age,
       ui_locales: "en",
-      claims: claims, // Use the parsed claims object
+      claims: claims, // Use the parsed claims object,
     };
 
 
@@ -180,6 +180,8 @@ const LoginPage = ({ onLogin }) => {
         if (state === 'ready') {
             renderButton();
         }
+
+        console.log("OIDC Config:", oidcConfig);
     }, [state]); // oidcConfig is not needed as a dependency if it doesn't change
 
     return (
@@ -389,7 +391,7 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
     const [error, setError] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
 
-    // This useEffect hook should only run once on component mount.
+    // This useEffect hook runs once on component mount to handle the OIDC callback.
     useEffect(() => {
         const getUserDetails = async (authcode) => {
             setStatus(status.AUTHENTICATING);
@@ -397,29 +399,27 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
             setUserInfo(null);
 
             try {
-                // NOTE: For this to work, you need a backend server running on localhost:8888
-                // that can securely exchange the auth code for a token and user info.
-                // The frontend should NOT handle the client secret.
-                const endpoint = `http://localhost:8888/delegate/fetchUserInfo?code=${authcode}`;
-                const response = await axios.get(endpoint, { headers: { "Content-Type": "application/json" } });
+                // This is the corrected backend endpoint.
+                const endpoint = `http://localhost:8888/delegate/fetchUserInfo`;
                 
-                // For testing without a backend, we can use mock data
-                if (authcode === 'mock_auth_code_12345') {
-                    const mockUserInfoData = {
-                        sub: '199512345678',
-                        given_name: 'Jane Doe',
-                        email: 'jane.doe@example.com',
-                        picture: '/person1.jpeg',
-                        birthdate: '1995-05-10',
-                        phone_number: '0719876543'
-                    };
-                    setUserInfo(mockUserInfoData);
-                    setStatus(status.LOADED);
-                } else {
-                    const userInfoData = response.data;
-                    setUserInfo(userInfoData);
-                    setStatus(status.LOADED);
-                }
+                // Construct the payload for the POST request.
+                // This data should match your OIDC client configuration.
+                const requestBody = {
+                    code: authcode,
+                    client_id: clientDetails.clientId,
+                    redirect_uri: clientDetails.redirect_uri_userprofile,
+                    grant_type: "authorization_code" // Standard grant type
+                };
+                
+                // Make a POST request instead of a GET request.
+                const response = await axios.post(endpoint, requestBody, { 
+                    headers: { "Content-Type": "application/json" } 
+                });
+
+                const userInfoData = response.data;
+                setUserInfo(userInfoData);
+                setStatus(status.LOADED);
+
             } catch (errormsg) {
                 console.error("API Fetch Error:", errormsg);
                 setError({ errorCode: errormsg.code || "API_FETCH_FAILED", errorMsg: errormsg.message });
@@ -445,47 +445,61 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
                 setStatus(status.ERROR);
             }
         };
+        
         getQueryParams();
-    }, [searchParams]); // Dependency array ensures this runs when query params change.
+    }, [searchParams]); // Dependency array is correct.
 
     return (
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md mx-auto text-center">
+        <div className="bg-white rounded-lg shadow-xl p-8 max-w-4xl mx-auto">
             {currentStatus === status.LOADING && (
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center text-center">
                     <Icon path={ICONS.spinner} className="animate-spin w-8 h-8 text-indigo-600 mb-4" />
                     <p className="text-gray-600">Loading, please wait...</p>
                 </div>
             )}
             {currentStatus === status.AUTHENTICATING && (
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center text-center">
                     <Icon path={ICONS.spinner} className="animate-spin w-8 h-8 text-indigo-600 mb-4" />
                     <h3 className="text-lg font-semibold text-gray-800">Authenticating</h3>
-                    <p className="text-gray-600">Fetching your details securely...</p>
+                    <p className="text-gray-600">Finalizing secure login and fetching your details...</p>
                 </div>
             )}
             {currentStatus === status.LOADED && userInfo && (
-                 <div className="flex flex-col items-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome, {userInfo?.given_name}!</h2>
-                    <img src={userInfo?.picture} alt="User profile" className="w-32 h-32 rounded-full shadow-lg mb-4 object-cover" />
-                    <div className="text-left space-y-2 bg-gray-50 p-4 rounded-lg w-full">
-                        <p><strong>Email:</strong> {userInfo?.email}</p>
-                        <p><strong>Date of Birth:</strong> {userInfo?.birthdate}</p>
-                        <p><strong>Phone:</strong> {userInfo?.phone_number || "N/A"}</p>
+                 <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Confirm Your Details</h2>
+                    <p className="text-gray-600 mb-6">These details have been securely fetched from your SLUDI profile. Please confirm they are correct before proceeding.</p>
+                    
+                    {/* Reusing the PersonalDetailsStep layout */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-t border-b py-6">
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormInput label="Full Name" name="fullName" value={userInfo.given_name} readOnly={true} />
+                            <FormInput label="NIC Number" name="nic" value={userInfo.sub} readOnly={true} />
+                            <FormInput label="Date of Birth" name="dob" value={userInfo.birthdate} readOnly={true} />
+                            <FormInput label="Phone Number" name="phone" value={userInfo.phone_number} readOnly={true} />
+                        </div>
+                        <div className="text-center">
+                            <img src={userInfo.picture || '/default-avatar.png'} alt="Applicant" className="w-40 h-50 object-cover rounded-lg shadow-md mx-auto" />
+                            <p className="text-sm text-gray-500 mt-2">Photo from SLUDI</p>
+                        </div>
                     </div>
-                     <button
-                        onClick={() => onSubmitToSLUDI(userInfo)}
-                        className="mt-6 w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                    >
-                        Proceed to Application
-                    </button>
+
+                     <div className="mt-8 flex justify-end">
+                        <button
+                            onClick={() => onSubmitToSLUDI(userInfo)}
+                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                        >
+                            Proceed to Application
+                            <Icon path={ICONS.arrowRight} className="ml-2 -mr-1 w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
             )}
             {currentStatus === status.ERROR && (
-                <div className="bg-red-50 p-6 rounded-lg text-red-800">
-                    <h3 className="font-bold text-lg mb-2">Oops! An error occurred.</h3>
-                    <p className="text-sm">We couldn't log you in. Please try again later.</p>
+                <div className="bg-red-50 p-6 rounded-lg text-red-800 text-center">
+                    <h3 className="font-bold text-lg mb-2">Oops! Authentication Failed.</h3>
+                    <p className="text-sm">We could not log you in using SLUDI. Please try again later or use a different login method.</p>
                     {error && (
-                        <div className="mt-4 text-left bg-red-100 p-2 rounded text-xs">
+                        <div className="mt-4 text-left bg-red-100 p-3 rounded text-xs font-mono">
                            <p><strong>Error Code:</strong> {error.errorCode}</p>
                            <p><strong>Details:</strong> {error.errorMsg}</p>
                         </div>
@@ -523,17 +537,33 @@ const PersonalDetailsStep = ({ data }) => (
 
 const MedicalCertificateStep = ({ data, setData }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [isFetched, setIsFetched] = useState(!!data.medicalStatus);
+    const [isFetched, setIsFetched] = useState(!!data.certificateId);
+    const [error, setError] = useState(null); // New state for error handling
 
-    const handleFetchMedical = () => {
-        setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            const medicalData = { medicalStatus: "Valid", medicalDate: "2026-08-15" };
-            setData(prev => ({ ...prev, ...medicalData }));
+    // Corrected function signature and added try/catch
+    const handleFetchMedical = async () => {
+         setIsLoading(true);
+         setError(null); // Reset error on new attempt
+         
+         try {
+             const endpoint = `http://localhost:8888/api/medical-certificate`;
+             const requestBody = { nic: data.nic };
+             const response = await axios.post(endpoint, requestBody, { 
+                 headers: { "Content-Type": "application/json" } 
+             });
+
+             const medicalData = response.data;
+             console.log("Medical Data Fetched:", medicalData);
+             setData(prev => ({ ...prev, ...medicalData }));
+             setIsFetched(true);
+
+         } catch (err) {
+            console.error("Failed to fetch medical certificate:", err);
+            setError("Could not fetch the medical certificate. Please try again later.");
+            setIsFetched(false);
+         } finally {
             setIsLoading(false);
-            setIsFetched(true);
-        }, 1500);
+         }
     };
 
     return (
@@ -541,6 +571,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
             <h3 className="text-lg font-medium text-gray-900 mb-4">Fetch Medical Certificate</h3>
             <p className="text-sm text-gray-500 mb-6">Click the button below to fetch your latest medical certificate from the national health database.</p>
 
+            {/* Do not show button if already fetched successfully */}
             {!isFetched && !isLoading && (
                 <button onClick={handleFetchMedical} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
                     Fetch Certificate
@@ -554,31 +585,87 @@ const MedicalCertificateStep = ({ data, setData }) => {
                 </div>
             )}
 
-            {isFetched && (
+            {isFetched && !error && (
                 <div className="bg-green-50 p-4 rounded-lg text-green-800">
                     <p className="font-semibold">Medical Certificate Fetched Successfully!</p>
-                    <p className="text-sm">Status: {data.medicalStatus} (Valid until: {data.medicalDate})</p>
+                    {/* Assuming API returns issuedDate and expiryDate */}
+                    <p className="text-sm">Status: {data.medicalStatus} (Issued: {data.issuedDate})</p>
+                </div>
+            )}
+
+            {/* Display error message if fetching fails */}
+            {error && (
+                 <div className="bg-red-50 p-4 rounded-lg text-red-800">
+                    <p className="font-semibold">Fetch Failed</p>
+                    <p className="text-sm">{error}</p>
                 </div>
             )}
         </div>
     );
 };
 
+const LicenceDetailsStep = ({ data, onChange }) => {
+    // State to store the categories fetched from the backend
+    const [categories, setCategories] = useState([]);
+    // State to handle loading UI
+    const [isLoading, setIsLoading] = useState(true);
+    // State to handle potential errors
+    const [error, setError] = useState(null);
 
-const LicenceDetailsStep = ({ data, onChange }) => (
-    <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Select Licence Category</h3>
-        <p className="text-sm text-gray-500 mb-4">Select the class of vehicles you wish to apply for. You may select multiple categories.</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <CheckboxCard id="A1" label="A1" description="Light Motor Cycle" data={data} onChange={onChange} />
-            <CheckboxCard id="A" label="A" description="Motor Cycle" data={data} onChange={onChange} />
-            <CheckboxCard id="B1" label="B1" description="Motor Tricycle" data={data} onChange={onChange} />
-            <CheckboxCard id="B" label="B" description="Light Motor Car" data={data} onChange={onChange} />
-            <CheckboxCard id="C1" label="C1" description="Light Motor Lorry" data={data} onChange={onChange} />
-            <CheckboxCard id="C" label="C" description="Heavy Motor Lorry" data={data} onChange={onChange} />
+    // useEffect hook to fetch data when the component mounts
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                // Make the API call to your backend endpoint
+                const response = await axios.get('http://localhost:8888/api/licence-categories');
+                setCategories(response.data);
+            } catch (err) {
+                console.error("Failed to fetch licence categories:", err);
+                setError("Could not load licence options. Please try again later.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, []); // The empty dependency array [] ensures this runs only once on mount
+
+    // Render a loading state while fetching
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center p-8 space-x-2 text-gray-600">
+                <Icon path={ICONS.spinner} className="animate-spin w-6 h-6" />
+                <span>Loading Licence Categories...</span>
+            </div>
+        );
+    }
+
+    // Render an error message if fetching failed
+    if (error) {
+        return <div className="text-center p-8 text-red-600 bg-red-50 rounded-lg">{error}</div>;
+    }
+
+    // Render the categories once they are successfully fetched
+    return (
+        <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Select Licence Category</h3>
+            <p className="text-sm text-gray-500 mb-4">Select the class of vehicles you wish to apply for. You may select multiple categories.</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {/* Map over the fetched categories array to dynamically render CheckboxCards */}
+                {categories.map(category => (
+                    <CheckboxCard
+                        key={category.id}
+                        id={category.id}
+                        label={category.label}
+                        description={category.description}
+                        data={data}
+                        onChange={onChange}
+                    />
+                ))}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const CheckboxCard = ({ id, label, description, data, onChange }) => (
     <label htmlFor={id} className={`relative flex flex-col p-4 border rounded-lg cursor-pointer transition-all duration-200 ${data[id] ? 'border-indigo-600 ring-2 ring-indigo-600 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'}`}>
