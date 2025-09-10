@@ -107,8 +107,8 @@ const AppContent = () => {
                     <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
                     <Route path="userprofile" element={<UserProfile onSubmitToSLUDI={proceedToApplication} />} />
                     <Route path="/application" element={<ApplicationPage onSubmit={handleSubmit} initialData={formData} />} />
-                    <Route path="/review" element={<ReviewPage formData={formData} onConfirm={() => navigate('/payment')} onEdit={handleEdit} />} />
-                    <Route path="/payment" element={<PaymentPage onPaymentSuccess={handlePaymentSuccess} />} />
+                    <Route path="/review" element={<ReviewPage formData={formData} onConfirm={() => window.location.href = 'http://localhost:5173/'} onEdit={handleEdit} />} />
+                    {/* <Route path="/payment" element={<PaymentPage onPaymentSuccess={handlePaymentSuccess} />} /> */}
                     <Route path="/confirmation" element={<ConfirmationPage onResubmit={handleResubmit} />} />
                 </Routes>
             </main>
