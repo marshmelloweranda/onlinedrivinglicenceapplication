@@ -293,13 +293,15 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
                         <p><strong className="text-gray-600">Full Name:</strong> {formData.fullName}</p>
                         <p><strong className="text-gray-600">NIC:</strong> {formData.nic}</p>
                         <p><strong className="text-gray-600">Date of Birth:</strong> {formData.dob}</p>
-                        <p><strong className="text-gray-600">Address:</strong> {formData.address}</p>
+                        <p><strong className="text-gray-600">Phone Number:</strong> {formData.phone}</p>
+                        <p><strong className="text-gray-600">Email:</strong> {formData.email}</p>
+                        <p><strong className="text-gray-600">Gender:</strong> {formData.gender}</p>
                     </div>
                 </div>
                 <div className="border-b pb-4">
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">Medical Certificate</h3>
-                    <p className={`text-sm ${formData.medicalStatus === 'Valid' ? 'text-green-600' : 'text-red-600'}`}>
-                        Status: {formData.medicalStatus || 'Not fetched'} {formData.medicalDate ? `(Issued: ${formData.medicalDate})` : ''}
+                    <p className={`text-sm ${formData.isFitToDrive === true ? 'text-green-600' : 'text-red-600'}`}>
+                        Status: {formData.remarks || 'Not fetched'} {formData.issuedDate ? `(Issued: ${formData.issuedDate})` : ''}
                     </p>
                 </div>
                 <div>
@@ -661,7 +663,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
                 <div className="bg-green-50 p-4 rounded-lg text-green-800">
                     <p className="font-semibold">Medical Certificate Fetched Successfully!</p>
                     {/* Assuming API returns issuedDate and expiryDate */}
-                    <p className="text-sm">Status: {data.medicalStatus} (Issued: {data.issuedDate})</p>
+                    <p className="text-sm">Status: {data.remarks} (Issued: {data.issuedDate})</p>
                 </div>
             )}
 
