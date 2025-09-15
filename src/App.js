@@ -74,12 +74,13 @@ const AppContent = () => {
     const proceedToApplication = (sludiData) => {
         // Here you would map the data from SLUDI to your application's state
          const mappedUserData = {
-            fullName: sludiData.given_name,
+            fullName: sludiData.name,
             nic: sludiData.sub, // Assuming 'sub' is the NIC from the token
             dob: sludiData.birthdate,
-            address: sludiData.address?.formatted || "No address provided",
+          //  address: sludiData.address?.formatted || "No address provided",
             phone: sludiData.phone_number,
             email: sludiData.email,
+            gender: sludiData.gender,
             photoUrl: sludiData.picture || '/default-avatar.png' // Provide a fallback avatar
         };
         setUserData(mappedUserData);
@@ -105,7 +106,7 @@ const AppContent = () => {
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <Routes>
                     <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
-                    <Route path="userprofile" element={<UserProfile onSubmitToSLUDI={proceedToApplication} />} />
+                    <Route path="/userprofile" element={<UserProfile onSubmitToSLUDI={proceedToApplication} />} />
                     <Route path="/application" element={<ApplicationPage onSubmit={handleSubmit} initialData={formData} />} />
                     <Route path="/review" element={<ReviewPage formData={formData} onConfirm={() => window.location.href = 'http://localhost:5173/'} onEdit={handleEdit} />} />
                     {/* <Route path="/payment" element={<PaymentPage onPaymentSuccess={handlePaymentSuccess} />} /> */}
@@ -529,11 +530,17 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
                                 readOnly={true} 
                             />
                             <FormInput 
+                                label="Gender" 
+                                name="gender" 
+                                value={userInfo.gender || ""} 
+                                readOnly={true} 
+                            />
+                            {/* <FormInput 
                                 label="Address" 
                                 name="address" 
                                 value={getFormattedAddress(userInfo.address)} 
                                 readOnly={true} 
-                            />
+                            /> */}
                         </div>
                         <div className="text-center">
                             <img 
@@ -544,13 +551,13 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
                             <p className="text-sm text-gray-500 mt-2">Photo from SLUDI</p>
                         </div>
                     </div>
-
+                {console.log("User Info:", userInfo)}
                     <div className="mt-8 flex justify-end">
                         <button
                             onClick={() => onSubmitToSLUDI(userInfo)}
                             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
-                            Proceed to Application
+                           Confirm & Proceed to Application
                             <Icon path={ICONS.arrowRight} className="ml-2 -mr-1 w-5 h-5" />
                         </button>
                     </div>
@@ -589,7 +596,9 @@ const PersonalDetailsStep = ({ data }) => (
             <FormInput label="Full Name" name="fullName" value={data.fullName} readOnly={true} />
             <FormInput label="NIC Number" name="nic" value={data.nic} readOnly={true} />
             <FormInput label="Date of Birth" name="dob" value={data.dob} readOnly={true} />
-            <FormInput label="Address" name="address" value={data.address} readOnly={true} />
+            <FormInput label="Phone Number" name="phone" value={data.phone} readOnly={true} />
+            <FormInput label="email" name="email" value={data.email} readOnly={true} />
+            <FormInput label="Gender" name="gender" value={data.gender} readOnly={true} />
         </div>
         <div className="text-center">
             <img src={data.photoUrl} alt="Applicant" className="w-40 h-50 object-cover rounded-lg shadow-md mx-auto" />
