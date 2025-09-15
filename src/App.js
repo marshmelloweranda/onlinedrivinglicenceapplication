@@ -42,6 +42,7 @@ const AppContent = () => {
             address: "No. 123, Galle Road, Colombo 03",
             phone: "0771234567",
             email: "kasun.silva@email.com",
+            gender: "Male",
             // CORRECTED PATH: Assumes person1.jpeg is in the /public folder
             photoUrl: `/person1.jpeg` 
         };
