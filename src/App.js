@@ -386,68 +386,95 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
         LOADED: "LOADED",
         ERROR: "ERROR",
     };
-    const [currentStatus, setStatus] = useState(status.LOADING);
+    const [currentStatus, setCurrentStatus] = useState(status.LOADING);
     const [searchParams] = useSearchParams();
     const [error, setError] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
 
-    // This useEffect hook runs once on component mount to handle the OIDC callback.
     useEffect(() => {
-        const getUserDetails = async (authcode) => {
-            setStatus(status.AUTHENTICATING);
+        const getUserDetails = async (authCode) => {
+            setCurrentStatus(status.AUTHENTICATING);
             setError(null);
             setUserInfo(null);
 
             try {
-                // This is the corrected backend endpoint.
                 const endpoint = `http://localhost:8888/delegate/fetchUserInfo`;
                 
-                // Construct the payload for the POST request.
-                // This data should match your OIDC client configuration.
                 const requestBody = {
-                    code: authcode,
+                    code: authCode,
                     client_id: clientDetails.clientId,
                     redirect_uri: clientDetails.redirect_uri_userprofile,
-                    grant_type: "authorization_code" // Standard grant type
+                    grant_type: "authorization_code"
                 };
                 
-                // Make a POST request instead of a GET request.
+                console.log("Fetching user info with request:", requestBody);
+                
                 const response = await axios.post(endpoint, requestBody, { 
                     headers: { "Content-Type": "application/json" } 
                 });
 
                 const userInfoData = response.data;
                 setUserInfo(userInfoData);
-                setStatus(status.LOADED);
+                setCurrentStatus(status.LOADED);
 
-            } catch (errormsg) {
-                console.error("API Fetch Error:", errormsg);
-                setError({ errorCode: errormsg.code || "API_FETCH_FAILED", errorMsg: errormsg.message });
-                setStatus(status.ERROR);
+            } catch (err) {
+                console.error("API Fetch Error:", err);
+                setError({ 
+                    errorCode: err.response?.data?.errorCode || "API_FETCH_FAILED", 
+                    errorMsg: err.response?.data?.errorMsg || err.message 
+                });
+                setCurrentStatus(status.ERROR);
             }
         };
 
         const getQueryParams = () => {
             const authCode = searchParams.get("code");
             const errorCode = searchParams.get("error");
-            const error_desc = searchParams.get("error_description");
+            const errorDesc = searchParams.get("error_description");
 
             if (errorCode) {
-                setError({ errorCode: errorCode, errorMsg: error_desc || "An error occurred during authentication." });
-                setStatus(status.ERROR);
+                setError({ 
+                    errorCode: errorCode, 
+                    errorMsg: errorDesc || "An error occurred during authentication." 
+                });
+                setCurrentStatus(status.ERROR);
                 return;
             }
 
             if (authCode) {
                 getUserDetails(authCode);
             } else {
-                setError({ errorCode: "AUTH_CODE_MISSING", errorMsg: "Authentication code is missing from the URL." });
-                setStatus(status.ERROR);
+                setError({ 
+                    errorCode: "AUTH_CODE_MISSING", 
+                    errorMsg: "Authentication code is missing from the URL." 
+                });
+                setCurrentStatus(status.ERROR);
             }
         };
         
         getQueryParams();
-    }, [searchParams]); // Dependency array is correct.
+    }, [searchParams, status.AUTHENTICATING, status.ERROR, status.LOADED]);
+
+    // Helper function to format address
+    const getFormattedAddress = (address) => {
+        if (!address) return "";
+        
+        const addressParts = [
+            address.formatted,
+            address.street_address,
+            address.addressLine1,
+            address.addressLine2,
+            address.addressLine3,
+            address.locality,
+            address.city,
+            address.province,
+            address.region,
+            address.postalCode ? `(${address.postalCode})` : null,
+            address.country
+        ].filter(part => part && part.trim() !== "");
+        
+        return addressParts.join(", ");
+    };
 
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-4xl mx-auto">
@@ -469,24 +496,59 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Confirm Your Details</h2>
                     <p className="text-gray-600 mb-6">These details have been securely fetched from your SLUDI profile. Please confirm they are correct before proceeding.</p>
                     
-                    {/* Reusing the PersonalDetailsStep layout */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center border-t border-b py-6">
                         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormInput label="Full Name" name="fullName" value={userInfo.given_name} readOnly={true} />
-                            <FormInput label="NIC Number" name="nic" value={userInfo.sub} readOnly={true} />
-                            <FormInput label="Date of Birth" name="dob" value={userInfo.birthdate} readOnly={true} />
-                            <FormInput label="Phone Number" name="phone" value={userInfo.phone_number} readOnly={true} />
+                            <FormInput 
+                                label="Full Name" 
+                                name="fullName" 
+                                value={userInfo.name || userInfo.given_name || ""} 
+                                readOnly={true} 
+                            />
+                            <FormInput 
+                                label="NIC Number" 
+                                name="nic" 
+                                value={userInfo.sub || ""} 
+                                readOnly={true} 
+                            />
+                            <FormInput 
+                                label="Date of Birth" 
+                                name="dob" 
+                                value={userInfo.birthdate || ""} 
+                                readOnly={true} 
+                            />
+                            <FormInput 
+                                label="Phone Number" 
+                                name="phone" 
+                                value={userInfo.phone_number_verified || userInfo.phone_number || ""} 
+                                readOnly={true} 
+                            />
+                            <FormInput 
+                                label="Email Address" 
+                                name="email" 
+                                value={userInfo.email_verified || userInfo.email || ""} 
+                                readOnly={true} 
+                            />
+                            <FormInput 
+                                label="Address" 
+                                name="address" 
+                                value={getFormattedAddress(userInfo.address)} 
+                                readOnly={true} 
+                            />
                         </div>
                         <div className="text-center">
-                            <img src={userInfo.picture || '/default-avatar.png'} alt="Applicant" className="w-40 h-50 object-cover rounded-lg shadow-md mx-auto" />
+                            <img 
+                                src={userInfo.picture || '/default-avatar.png'} 
+                                alt="Applicant" 
+                                className="w-40 h-50 object-cover rounded-lg shadow-md mx-auto" 
+                            />
                             <p className="text-sm text-gray-500 mt-2">Photo from SLUDI</p>
                         </div>
                     </div>
 
-                     <div className="mt-8 flex justify-end">
+                    <div className="mt-8 flex justify-end">
                         <button
                             onClick={() => onSubmitToSLUDI(userInfo)}
-                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             Proceed to Application
                             <Icon path={ICONS.arrowRight} className="ml-2 -mr-1 w-5 h-5" />
@@ -509,6 +571,7 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
         </div>
     );
 };
+
 
 
 // --- Form Step Components ---
