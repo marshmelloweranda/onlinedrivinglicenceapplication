@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Icon, { ICONS } from '../Icon';
+import axios from 'axios';
 
 const ReviewPage = ({ formData, onConfirm, onEdit }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -9,8 +10,26 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
     const handleConfirm = async () => {
         setIsSubmitting(true);
         setError(null);
+        
         try {
             await onConfirm();
+            
+            axios.post('http://localhost:8888/api/initiate-payment', formData, {
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                console.log('Payment initiation response:', response.data);
+                if (response.status === 200) {
+                    window.location.href = 'http://localhost:5173/';
+                } else {
+                    setError('Payment initiation failed. Please try again.');
+                }
+            })
+            .catch(err => {
+                console.error('Payment initiation error:', err);
+                setError('An error occurred while initiating payment. Please try again.');
+            });     
+
         } catch (err) {
             setError('Failed to connect to the payment service. Please check your connection and try again.');
         } finally {

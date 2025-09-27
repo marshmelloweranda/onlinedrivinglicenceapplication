@@ -63,7 +63,7 @@ const AppContent = () => {
 
     const handlePayment = async () => {
 
-        window.location.href = 'http://localhost:5173/';
+       // window.location.href = 'http://localhost:5173/';
     }
 
     return (
