@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate } from "react-router-dom";
-import axios from "axios"; // Add this import
+import axios from "axios";
 import Header from './Header';
 import LoginPage from './pages/LoginPage';
-import UserProfile from './pages/UserProfile';
 import ApplicationPage from './pages/ApplicationPage';
 import ReviewPage from './pages/ReviewPage';
 import ConfirmationPage from './pages/ConfirmationPage';
@@ -45,7 +44,8 @@ const AppContent = () => {
         navigate('/');
     }
 
-    const proceedToApplication = (sludiData) => {
+    // Modified: Directly proceed to application after SLUDI login
+    const handleSLUDILogin = (sludiData) => {
         const mappedUserData = {
             fullName: sludiData.name,
             sub: sludiData.sub,
@@ -61,37 +61,24 @@ const AppContent = () => {
         console.log("SLUDI Data Mapped to Application:", mappedUserData);
     }
 
+    const handlePayment = async () => {
+
+        window.location.href = 'http://localhost:5173/';
+    }
+
     return (
         <div className="bg-gray-50 min-h-screen font-sans">
             <Header onResubmit={handleResubmit} />
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <Routes>
-                    <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
-                    <Route path="/userprofile" element={<UserProfile onSubmitToSLUDI={proceedToApplication} />} />
+                    <Route path="/" element={<LoginPage onLogin={handleLogin} onSLUDILogin={handleSLUDILogin} />} />
                     <Route path="/application" element={<ApplicationPage onSubmit={handleSubmit} initialData={formData} />} />
                     <Route
                         path="/review"
                         element={
                             <ReviewPage
                                 formData={formData}
-                                onConfirm={async () => {
-                                    try {
-                                        const response = await axios.post('http://localhost:8888/api/initiate-payment', formData, {
-                                            headers: { 'Content-Type': 'application/json' }
-                                        });
-
-                                        console.log('Payment initiation response:', response.data);
-
-                                        if (response.status === 200) {
-                                            window.location.href = 'http://localhost:5173/';
-                                        } else {
-                                            throw new Error('Payment initiation failed with status: ' + response.status);
-                                        }
-                                    } catch (error) {
-                                        console.error('Payment initiation failed:', error);
-                                        throw error;
-                                    }
-                                }}
+                                onConfirm={handlePayment}
                                 onEdit={handleEdit}
                             />
                         }
