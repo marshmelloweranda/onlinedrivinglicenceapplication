@@ -13,9 +13,10 @@ const LicenceDetailsStep = ({ data, onChange }) => {
             try {
                 const response = await axios.get('http://localhost:8888/api/licence-categories');
                 setCategories(response.data);
+                setError(null);
             } catch (err) {
                 console.error("Failed to fetch licence categories:", err);
-                setError("Could not load licence options. Please try again later.");
+                setError(err.response?.data?.error || "Could not load licence options. Please try again later.");
             } finally {
                 setIsLoading(false);
             }
@@ -23,6 +24,25 @@ const LicenceDetailsStep = ({ data, onChange }) => {
 
         fetchCategories();
     }, []);
+
+    // Create a data object for CheckboxCard where keys are category IDs and values are booleans
+    const checkboxData = {};
+    categories.forEach(category => {
+        checkboxData[category.id] = data.selectedCategories?.includes(category.id) || false;
+    });
+
+    const handleCheckboxChange = (event) => {
+        const { id, checked } = event.target;
+        
+        const updatedCategories = checked
+            ? [...(data.selectedCategories || []), id]
+            : (data.selectedCategories || []).filter(catId => catId !== id);
+
+        onChange({
+            ...data,
+            selectedCategories: updatedCategories
+        });
+    };
 
     if (isLoading) {
         return (
@@ -34,7 +54,20 @@ const LicenceDetailsStep = ({ data, onChange }) => {
     }
 
     if (error) {
-        return <div className="text-center p-8 text-red-600 bg-red-50 rounded-lg">{error}</div>;
+        return (
+            <div className="text-center p-8">
+                <div className="bg-red-50 p-4 rounded-lg text-red-800 max-w-md mx-auto">
+                    <p className="font-semibold">Error Loading Categories</p>
+                    <p className="text-sm mt-2">{error}</p>
+                    <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -48,11 +81,19 @@ const LicenceDetailsStep = ({ data, onChange }) => {
                         id={category.id}
                         label={category.label}
                         description={category.description}
-                        data={data}
-                        onChange={onChange}
+                        data={checkboxData}
+                        onChange={handleCheckboxChange}
                     />
                 ))}
             </div>
+            
+            {data.selectedCategories && data.selectedCategories.length > 0 && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <p className="font-medium text-blue-900">
+                        Selected {data.selectedCategories.length} categor{data.selectedCategories.length === 1 ? 'y' : 'ies'}
+                    </p>
+                </div>
+            )}
         </div>
     );
 };

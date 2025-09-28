@@ -6,7 +6,10 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     
-    const selectedCategories = Object.keys(formData).filter(key => ['A1', 'A', 'B1', 'B', 'C1', 'C'].includes(key) && formData[key]).join(', ') || 'None Selected';
+    // Fix: Get selected categories from the array instead of individual keys
+    const selectedCategories = formData.selectedCategories && formData.selectedCategories.length > 0 
+        ? formData.selectedCategories.join(', ') 
+        : 'None Selected';
 
     // Extract test data
     const writtenTest = formData.writtenTest || {};

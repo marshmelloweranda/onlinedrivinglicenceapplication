@@ -8,7 +8,7 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
     const [formState, setFormState] = useState(initialData || {});
 
     useEffect(() => {
-        setFormState(initialData);
+        setFormState(initialData || {});
         setStep(1);
     }, [initialData]);
 
@@ -23,14 +23,22 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
         }));
     }
 
+    // Add this specific handler for LicenceDetailsStep
+    const handleLicenceDetailsChange = (licenceData) => {
+        setFormState(prev => ({
+            ...prev,
+            ...licenceData
+        }));
+    }
+
     const renderStep = () => {
         switch (step) {
             case 1:
-                return <PersonalDetailsStep data={formState} />;
+                return <PersonalDetailsStep data={formState} onChange={handleChange} />;
             case 2:
                 return <MedicalCertificateStep data={formState} setData={setFormState} />;
             case 3:
-                return <LicenceDetailsStep data={formState} onChange={handleChange} />;
+                return <LicenceDetailsStep data={formState} onChange={handleLicenceDetailsChange} />;
             default:
                 return null;
         }
