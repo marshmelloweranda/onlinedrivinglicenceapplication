@@ -15,6 +15,8 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
     const writtenTest = formData.writtenTest || {};
     const practicalTest = formData.practicalTest || {};
 
+    console.log('ReviewPage formData:', formData);
+
     const handleConfirm = async () => {
         setIsSubmitting(true);
         setError(null);
@@ -22,7 +24,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
         try {
             await onConfirm();
             
-            axios.post('http://localhost:8888/api/initiate-payment', formData, {
+            axios.post('http://localhost:8888/api/confirm-payment', formData, {
                 headers: { 'Content-Type': 'application/json' }
             })
             .then(response => {
