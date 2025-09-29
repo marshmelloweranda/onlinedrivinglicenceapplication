@@ -26,7 +26,7 @@ window._env_ = {
   REDIRECT_URI_USER_PROFILE: "http://localhost:3001/dmt",
   REDIRECT_URI_REGISTRATION: "http://localhost:3001/dmt/registration",
   REDIRECT_URI: "http://localhost:3001/dmt",
-  CLIENT_ID: "IIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjUywU",//this key will be provided by ICTA for your group
+  CLIENT_ID: "IIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoJCXH",//this key will be provided by ICTA for your group
   ACRS: "mosip:idp:acr:generated-code%20mosip:idp:acr:biometrics%20mosip:idp:acr:static-code",
   SCOPE_USER_PROFILE: "openid%20profile%20resident-service",
   SCOPE_REGISTRATION: "openid%20profile",
