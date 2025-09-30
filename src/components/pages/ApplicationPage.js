@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PersonalDetailsStep from '../steps/PersonalDetailsStep';
 import MedicalCertificateStep from '../steps/MedicalCertificateStep';
 import LicenceDetailsStep from '../steps/LicenceDetailsStep';
+import ReviewPage from './ReviewPage';
 
 const ApplicationPage = ({ onSubmit, initialData }) => {
     const [step, setStep] = useState(1);
@@ -31,6 +32,11 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
         }));
     }
 
+     const handleEditDetails = () => {
+        // Set the step back to the LicenceDetailsStep (Step 3)
+        setStep(3);
+    };
+
     const renderStep = () => {
         switch (step) {
             case 1:
@@ -49,7 +55,7 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
     const isFirstStep = step === 1; // New variable for clarity
 
 
-    return (
+   return (
         <div className="bg-white rounded-lg shadow-xl p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">New Driving Licence Application</h2>
             <p className="text-gray-600 mb-6">Step {step} of {totalSteps} - {['Personal Details', 'Medical Certificate', 'Licence Category'][step - 1]}</p>
@@ -58,14 +64,33 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
                     <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
                 </div>
             </div>
-            <div>{renderStep()}</div>
-            <div className="mt-8 pt-6 border-t flex justify-between">
-                <button onClick={handleBack} disabled={step === 1} className={`px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed ${isFirstStep ? 'invisible' : ''}`}
->Back</button>
-                {isLastStep ? (
-                    <button onClick={() => onSubmit(formState)} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Review Application</button>
+            <div>
+                {/* Conditional rendering for the ReviewPage */}
+                {step <= totalSteps ? (
+                    renderStep()
                 ) : (
-                    <button onClick={handleNext} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Next Step</button>
+                    // When step > totalSteps, we render the Review Page.
+                    // Pass the handleEditDetails function to onEdit.
+                    <ReviewPage 
+                        formData={formState} 
+                        onConfirm={onSubmit} // Assuming onSubmit handles the final confirmation logic after payment initiation
+                        onEdit={handleEditDetails} // <--- MODIFICATION HERE
+                    />
+                )}
+            </div>
+            <div className="mt-8 pt-6 border-t flex justify-between">
+                {/* The Back/Next/Review buttons should only appear on the main application steps */}
+                {step <= totalSteps && (
+                    <>
+                        <button onClick={handleBack} disabled={step === 1} className={`px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed ${isFirstStep ? 'invisible' : ''}`}
+        >Back</button>
+                        {isLastStep ? (
+                            // Change the Review Application button action to set a step that triggers the ReviewPage render
+                            <button onClick={() => setStep(prev => prev + 1)} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Review Application</button> // <--- MODIFICATION HERE
+                        ) : (
+                            <button onClick={handleNext} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Next Step</button>
+                        )}
+                    </>
                 )}
             </div>
         </div>
