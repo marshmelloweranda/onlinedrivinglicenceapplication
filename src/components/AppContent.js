@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate ,useLocation} from "react-router-dom";
 import axios from "axios";
 import Header from './Header';
 import LoginPage from './pages/LoginPage';
@@ -9,8 +9,13 @@ import ConfirmationPage from './pages/ConfirmationPage';
 
 const AppContent = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [formData, setFormData] = useState({});
     const [userData, setUserData] = useState(null);
+
+
+    // Check if the current path is the root (Login Page)
+    const isLoginPage = location.pathname === '/';
 
     const handleLogin = (nic) => {
         const mockUserData = {
@@ -35,6 +40,7 @@ const AppContent = () => {
     };
 
     const handleEdit = () => {
+    
         navigate('/application');
     }
 
@@ -68,7 +74,7 @@ const AppContent = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans">
-            <Header onResubmit={handleResubmit} />
+            {!isLoginPage && <Header onResubmit={handleResubmit} />}
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <Routes>
                     <Route path="/" element={<LoginPage onLogin={handleLogin} onSLUDILogin={handleSLUDILogin} />} />

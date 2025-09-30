@@ -46,6 +46,8 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
 
     const totalSteps = 3;
     const isLastStep = step === totalSteps;
+    const isFirstStep = step === 1; // New variable for clarity
+
 
     return (
         <div className="bg-white rounded-lg shadow-xl p-8">
@@ -58,7 +60,8 @@ const ApplicationPage = ({ onSubmit, initialData }) => {
             </div>
             <div>{renderStep()}</div>
             <div className="mt-8 pt-6 border-t flex justify-between">
-                <button onClick={handleBack} disabled={step === 1} className="px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">Back</button>
+                <button onClick={handleBack} disabled={step === 1} className={`px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed ${isFirstStep ? 'invisible' : ''}`}
+>Back</button>
                 {isLastStep ? (
                     <button onClick={() => onSubmit(formState)} className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Review Application</button>
                 ) : (
