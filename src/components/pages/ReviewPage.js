@@ -24,7 +24,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
         try {
             await onConfirm();
             
-            axios.post('http://localhost:8888/api/confirm-payment', formData, {
+            axios.post('http://dmt.digieconcenter.gov.lk/user/api/confirm-payment', formData, {
                 headers: { 'Content-Type': 'application/json' }
             })
             .then(response => {

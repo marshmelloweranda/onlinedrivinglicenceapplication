@@ -11,7 +11,7 @@ const LicenceDetailsStep = ({ data, onChange }) => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:8888/api/licence-categories');
+                const response = await axios.get('http://dmt.digieconcenter.gov.lk/user/api/licence-categories');
                 setCategories(response.data);
                 setError(null);
             } catch (err) {

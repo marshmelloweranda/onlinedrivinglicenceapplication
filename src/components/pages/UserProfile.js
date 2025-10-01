@@ -24,7 +24,7 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
             setUserInfo(null);
 
             try {
-                const endpoint = `http://localhost:8888/delegate/fetchUserInfo`;
+                const endpoint = `http://dmt.digieconcenter.gov.lk/user/delegate/fetchUserInfo`;
                 const requestBody = {
                     code: authCode,
                     client_id: clientDetails.clientId,
