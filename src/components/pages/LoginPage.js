@@ -81,7 +81,7 @@ const LoginPage = ({ onLogin, onSLUDILogin }) => {
 
         const fetchUserInfo = async (authCode) => {
             try {
-                const endpoint = `http://dmt.digieconcenter.gov.lk/user/delegate/fetchUserInfo`;
+                const endpoint = `http://localhost:8888/delegate/fetchUserInfo`;
                 const requestBody = {
                     code: authCode,
                     client_id: clientDetails.clientId,

@@ -46,7 +46,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
         setIsLoading(prev => ({ ...prev, medical: true }));
         setError(prev => ({ ...prev, medical: null }));
         try {
-            const endpoint = `http://dmt.digieconcenter.gov.lk/user/api/medical-certificate`;
+            const endpoint = `http://localhost:8888/api/medical-certificate`;
             const requestBody = { sub: data.sub };
             const response = await axios.post(endpoint, requestBody);
             const medicalData = response.data;
@@ -79,7 +79,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
         setIsLoading(prev => ({ ...prev, written: true }));
         setError(prev => ({ ...prev, written: null }));
         try {
-            const endpoint = `http://dmt.digieconcenter.gov.lk/user/api/written-test`;
+            const endpoint = `http://localhost:8888/api/written-test`;
             const requestBody = { sub: data.sub };
             const response = await axios.post(endpoint, requestBody);
             const writtenTestData = response.data;
@@ -109,7 +109,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
         setIsLoading(prev => ({ ...prev, practical: true }));
         setError(prev => ({ ...prev, practical: null }));
         try {
-            const endpoint = `http://dmt.digieconcenter.gov.lk/user/api/practical-test`;
+            const endpoint = `http://localhost:8888/api/practical-test`;
             const requestBody = { sub: data.sub };
             const response = await axios.post(endpoint, requestBody);
             const practicalTestData = response.data;

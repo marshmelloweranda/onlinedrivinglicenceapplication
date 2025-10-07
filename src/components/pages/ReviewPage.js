@@ -5,40 +5,56 @@ import axios from 'axios';
 const ReviewPage = ({ formData, onConfirm, onEdit }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
-    
+
     // Fix: Get selected categories from the array instead of individual keys
-    const selectedCategories = formData.selectedCategories && formData.selectedCategories.length > 0 
-        ? formData.selectedCategories.join(', ') 
+    const selectedCategories = formData.selectedCategories && formData.selectedCategories.length > 0
+        ? formData.selectedCategories.join(', ')
         : 'None Selected';
 
     // Extract test data
     const writtenTest = formData.writtenTest || {};
+    console.log(writtenTest);
+
+    if (writtenTest.score > 75) {
+        writtenTest.passed = true;
+    }
+    else {
+        writtenTest.passed = false;
+    }
+
     const practicalTest = formData.practicalTest || {};
+    console.log(practicalTest);
+    if (practicalTest.score > 75) {
+        practicalTest.passed = true;
+    }
+    else {
+        practicalTest.passed = false;
+    }
 
     console.log('ReviewPage formData:', formData);
 
     const handleConfirm = async () => {
         setIsSubmitting(true);
         setError(null);
-        
+
         try {
             await onConfirm();
-            
-            axios.post('http://dmt.digieconcenter.gov.lk/user/api/confirm-payment', formData, {
+
+            axios.post('http://localhost:8888/api/confirm-payment', formData, {
                 headers: { 'Content-Type': 'application/json' }
             })
-            .then(response => {
-                console.log('Payment initiation response:', response.data);
-                if (response.status === 200) {
-                    window.location.href = 'http://localhost:5173/';
-                } else {
-                    setError('Payment initiation failed. Please try again.');
-                }
-            })
-            .catch(err => {
-                console.error('Payment initiation error:', err);
-                setError('An error occurred while initiating payment. Please try again.');
-            });     
+                .then(response => {
+                    console.log('Payment initiation response:', response.data);
+                    if (response.status === 200) {
+                        window.location.href = 'http://localhost:5173/';
+                    } else {
+                        setError('Payment initiation failed. Please try again.');
+                    }
+                })
+                .catch(err => {
+                    console.error('Payment initiation error:', err);
+                    setError('An error occurred while initiating payment. Please try again.');
+                });
 
         } catch (err) {
             setError('Failed to connect to the payment service. Please check your connection and try again.');
@@ -49,15 +65,16 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
 
     const getTestStatusBadge = (passed, score, passingScore = 75) => {
         if (!score && score !== 0) return null;
-        
+
         const isPassed = passed !== undefined ? passed : score >= passingScore;
+        console.log()
         return (
-            <span className={`ml-2 px-2 py-1 rounded text-xs font-medium ${
-                isPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
+            <span className={`ml-2 px-2 py-1 rounded text-xs font-medium ${isPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
                 {isPassed ? 'PASSED' : 'FAILED'}
             </span>
         );
+
     };
 
     const formatTestDate = (dateString) => {
@@ -73,7 +90,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
         <div className="bg-white rounded-lg shadow-xl p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Review Your Application</h2>
             <p className="text-gray-600 mb-6">Please carefully check all your details before proceeding to payment.</p>
-            
+
             <div className="space-y-6">
                 {/* Personal Details Section */}
                 <div className="border-b pb-4">
@@ -92,8 +109,8 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">Medical Certificate</h3>
                     <div className="space-y-2 text-sm">
                         <p className={`flex items-center ${formData.isFitToDrive === true ? 'text-green-600' : 'text-red-600'}`}>
-                            <strong className="text-gray-600 mr-2">Status:</strong> 
-                            {formData.remarks || 'Not fetched'} 
+                            <strong className="text-gray-600 mr-2">Status:</strong>
+                            {formData.remarks || 'Not fetched'}
                             {formData.issuedDate ? ` (Issued: ${formData.issuedDate})` : ''}
                         </p>
                         {formData.certificateId && (
@@ -111,7 +128,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
                     {writtenTest.score !== undefined ? (
                         <div className="space-y-2 text-sm">
                             <p className="flex items-center">
-                                <strong className="text-gray-600 mr-2">Score:</strong> 
+                                <strong className="text-gray-600 mr-2">Score:</strong>
                                 {writtenTest.score}/100
                                 {getTestStatusBadge(writtenTest.passed, writtenTest.score, 75)}
                             </p>
@@ -137,7 +154,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
                     {practicalTest.score !== undefined ? (
                         <div className="space-y-2 text-sm">
                             <p className="flex items-center">
-                                <strong className="text-gray-600 mr-2">Score:</strong> 
+                                <strong className="text-gray-600 mr-2">Score:</strong>
                                 {practicalTest.score}/100
                                 {getTestStatusBadge(practicalTest.passed, practicalTest.score, 80)}
                             </p>
@@ -211,16 +228,16 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
             {/* Action Buttons */}
             <div className="mt-8 pt-6 border-t flex flex-col items-end">
                 <div className="flex space-x-3">
-                    <button 
-                        onClick={onEdit} 
-                        disabled={isSubmitting} 
+                    <button
+                        onClick={onEdit}
+                        disabled={isSubmitting}
                         className="px-6 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                     >
                         Edit Details
                     </button>
-                    <button 
-                        onClick={handleConfirm} 
-                        disabled={isSubmitting} 
+                    <button
+                        onClick={handleConfirm}
+                        disabled={isSubmitting}
                         className="px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400"
                     >
                         {isSubmitting ? (

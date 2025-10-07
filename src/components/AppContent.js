@@ -59,7 +59,19 @@ const AppContent = () => {
             phone: sludiData.phone_number,
             email: sludiData.email,
             gender: sludiData.gender,
-            photoUrl: sludiData.picture || '/default-avatar.png'
+            photoUrl: sludiData.picture || '/default-avatar.png',
+
+            // simulate RMV data
+            blood_group: 'B+',
+            medical_certificate_id: 'med-1',
+            doctorName: 'Dr. Sampath',
+            hospital: 'IDH',
+            issuedDate: '2013/01/12',
+            expiryDate: '2027/01/12',
+            isFitToDrive: 'Yes',
+            vision: 'good',
+            hearing: 'good',
+            remarks: 'none',
         };
         setUserData(mappedUserData);
         setFormData(mappedUserData);
