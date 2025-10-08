@@ -1,12 +1,24 @@
 import React, { useState } from 'react';
 import Icon, { ICONS } from '../Icon';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const ReviewPage = ({ formData, onConfirm, onEdit }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
-    // Fix: Get selected categories from the array instead of individual keys
+    // --- 1. CRITICAL FIX: Add a check for formData ---
+    if (!formData) {
+        // You can return a loading state, a fallback message, 
+        // or just null until the data is ready.
+        return <div className="text-center py-12 text-gray-500">Loading application data...</div>;
+    }
+    // ----------------------------------------------------
+
+    console.log('review page form data', formData);
+    
+    // Original safe check, now safe due to the above guard clause:
     const selectedCategories = formData.selectedCategories && formData.selectedCategories.length > 0
         ? formData.selectedCategories.join(', ')
         : 'None Selected';
@@ -46,7 +58,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
                 .then(response => {
                     console.log('Payment initiation response:', response.data);
                     if (response.status === 200) {
-                        window.location.href = 'http://localhost:5173/';
+                        navigate('/payment')
                     } else {
                         setError('Payment initiation failed. Please try again.');
                     }
@@ -67,7 +79,6 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
         if (!score && score !== 0) return null;
 
         const isPassed = passed !== undefined ? passed : score >= passingScore;
-        console.log()
         return (
             <span className={`ml-2 px-2 py-1 rounded text-xs font-medium ${isPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                 }`}>
