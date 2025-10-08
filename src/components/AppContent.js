@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import ApplicationPage from './pages/ApplicationPage';
 import ReviewPage from './pages/ReviewPage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import PaymentAppPage from './pages/PaymentAppPage';
 
 const AppContent = () => {
     const navigate = useNavigate();
@@ -102,6 +103,7 @@ const AppContent = () => {
                         }
                     />
                     <Route path="/confirmation" element={<ConfirmationPage onResubmit={handleResubmit} />} />
+                    <Route path="/payment" element={<PaymentAppPage />} />
                 </Routes>
             </main>
         </div>
