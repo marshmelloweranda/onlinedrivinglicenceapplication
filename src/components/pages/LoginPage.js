@@ -4,7 +4,7 @@ import clientDetails from "../../constants/clientDetails";
 import FormInput from '../FormInput';
 import Icon, { ICONS } from '../Icon';
 
-const LoginPage = ({ onLogin, onSLUDILogin }) => {
+const LoginPage = ({ onLogin }) => {
     const [nic, setNic] = useState('');
     const [password, setPassword] = useState('');
     const signInButtonScript = "/plugins/sign-in-button-plugin.js";
@@ -60,56 +60,6 @@ const LoginPage = ({ onLogin, onSLUDILogin }) => {
             renderButton();
         }
     }, [state, oidcConfig]);
-
-    // Add effect to handle SLUDI callback directly
-    useEffect(() => {
-        const handleSLUDICallback = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const error = urlParams.get('error');
-
-            if (error) {
-                console.error('SLUDI Authentication Error:', error);
-                return;
-            }
-
-            if (code) {
-                // Fetch user info directly and proceed to application
-                fetchUserInfo(code);
-            }
-        };
-
-        const fetchUserInfo = async (authCode) => {
-            try {
-                const endpoint = `http://localhost:8888/delegate/fetchUserInfo`;
-                const requestBody = {
-                    code: authCode,
-                    client_id: clientDetails.clientId,
-                    redirect_uri: clientDetails.redirect_uri_userprofile,
-                    grant_type: "authorization_code"
-                };
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                if (response.ok) {
-                    const userInfo = await response.json();
-                    onSLUDILogin(userInfo);
-                } else {
-                    throw new Error('Failed to fetch user info');
-                }
-            } catch (err) {
-                console.error("SLUDI API Fetch Error:", err);
-            }
-        };
-
-        // Check if this is a callback from SLUDI
-        if (window.location.search.includes('code=') || window.location.search.includes('error=')) {
-            handleSLUDICallback();
-        }
-    }, [onSLUDILogin]);
 
     return (
         <div className="bg-white rounded-lg shadow-xl p-8 md:p-12 max-w-md mx-auto">
