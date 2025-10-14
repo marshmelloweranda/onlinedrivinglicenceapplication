@@ -4,7 +4,7 @@ import AppContent from './components/AppContent';
 
 export default function App() {
     return (
-        <BrowserRouter basename='/dmt'>
+        <BrowserRouter basename='/'>
             <AppContent />
         </BrowserRouter>
     );
