@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import ApplicationPage from './pages/ApplicationPage';
 import ReviewPage from './pages/ReviewPage';
 import ConfirmationPage from './pages/ConfirmationPage';
+import UserProfile from './pages/UserProfile';
 import PaymentAppPage from './pages/PaymentAppPage';
 
 const AppContent = () => {
@@ -76,7 +77,7 @@ const AppContent = () => {
         };
         setUserData(mappedUserData);
         setFormData(mappedUserData);
-        navigate('/application');
+        navigate('/approve-page');
         console.log("SLUDI Data Mapped to Application:", mappedUserData);
     }
 
@@ -90,8 +91,11 @@ const AppContent = () => {
             {!isLoginPage && <Header onResubmit={handleResubmit} />}
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <Routes>
-                    <Route path="/" element={<LoginPage onLogin={handleLogin} onSLUDILogin={handleSLUDILogin} />} />
+                    <Route path="/" element={<LoginPage onLogin={handleLogin} />} />
                     <Route path="/application" element={<ApplicationPage onSubmit={handleSubmit} initialData={formData} />} />
+                    <Route path="/userprofile" element={<UserProfile onSubmitToSLUDI={handleSLUDILogin} />} />
+                    <Route path="/approve-page" element={<UserProfile onSubmitToSLUDI={handleSLUDILogin} />} />
+
                     <Route
                         path="/review"
                         element={
