@@ -110,7 +110,7 @@ const AppContent = () => {
                                 formData={formData}
                                 onConfirm={async () => {
                                     try {
-                                        const response = await axios.post('http://localhost:8888/api/initiate-payment', formData, {
+                                        const response = await axios.post(`${process.env.REACT_APP_API_URL}/initiate-payment`, formData, {
                                             headers: { 'Content-Type': 'application/json' }
                                         });
 
@@ -398,7 +398,7 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
             setUserInfo(null);
 
             try {
-                const endpoint = `http://localhost:8888/delegate/fetchUserInfo`;
+                const endpoint = `${process.env.REACT_APP_API_URL}/delegate/fetchUserInfo`;
                 const requestBody = {
                     code: authCode,
                     client_id: clientDetails.clientId,
@@ -541,7 +541,7 @@ const MedicalCertificateStep = ({ data, setData }) => {
         setIsLoading(true);
         setError(null);
         try {
-            const endpoint = `http://localhost:8888/api/medical-certificate`;
+            const endpoint = `${process.env.REACT_APP_API_URL}/medical-certificate`;
             const requestBody = { sub: data.sub };
             const response = await axios.post(endpoint, requestBody, {
                 headers: { "Content-Type": "application/json" }
@@ -601,7 +601,7 @@ const LicenceDetailsStep = ({ data, onChange }) => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get('http://localhost:8888/api/licence-categories');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/licence-categories`);
                 setCategories(response.data);
             } catch (err) {
                 console.error("Failed to fetch licence categories:", err);
