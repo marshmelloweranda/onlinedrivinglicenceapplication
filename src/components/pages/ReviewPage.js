@@ -52,7 +52,7 @@ const ReviewPage = ({ formData, onConfirm, onEdit }) => {
         try {
             await onConfirm();
 
-            axios.post('http://localhost:8888/api/confirm-payment', formData, {
+            axios.post(`${process.env.REACT_APP_API_URL}/confirm-payment`, formData, {
                 headers: { 'Content-Type': 'application/json' }
             })
                 .then(response => {

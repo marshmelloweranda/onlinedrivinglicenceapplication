@@ -40,7 +40,7 @@ const UserProfile = ({ onSubmitToSLUDI }) => {
 
         const fetchUserInfo = async (authCode) => {
             try {
-                const endpoint = `http://localhost:8888/delegate/fetchUserInfo`;
+                const endpoint = `${process.env.REACT_APP_API_URL}/delegate/fetchUserInfo`;
                 const requestBody = {
                     code: authCode,
                     client_id: clientDetails.clientId,
